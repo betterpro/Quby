@@ -173,7 +173,7 @@ class RewardsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Worth €${(state.points / 100).toStringAsFixed(2)}',
+            'Worth \$${(state.points / 100).toStringAsFixed(2)}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               color: Colors.white.withOpacity(0.8),
@@ -429,7 +429,7 @@ class RewardsScreen extends StatelessWidget {
       color: const Color(0xFFE0913B),
     ),
     _Perk(
-      title: '€5 Cashback',
+      title: r'$5 Cashback',
       subtitle: 'Any Quby merchant',
       cost: 1000,
       icon: 'wallet',

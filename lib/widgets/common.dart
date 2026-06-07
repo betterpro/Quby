@@ -253,7 +253,7 @@ class AmountDisplay extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(top: fontSize * 0.15),
           child: Text(
-            '€',
+            r'$',
             style: GoogleFonts.spaceGrotesk(
               fontSize: fontSize * 0.5,
               fontWeight: FontWeight.w500,
@@ -510,7 +510,7 @@ class TransactionTile extends StatelessWidget {
           ),
         ),
         Text(
-          '$amountPrefix€${tx.amount.toStringAsFixed(2)}',
+          '$amountPrefix\$${tx.amount.toStringAsFixed(2)}',
           style: GoogleFonts.spaceGrotesk(
             fontSize: 14,
             fontWeight: FontWeight.w600,

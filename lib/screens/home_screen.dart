@@ -211,7 +211,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '€${state.balance.toStringAsFixed(2)}',
+            '\$${state.balance.toStringAsFixed(2)}',
             style: GoogleFonts.spaceGrotesk(
               fontSize: 40,
               fontWeight: FontWeight.w700,
@@ -396,7 +396,7 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '${isPositive ? '+' : ''}€${netBalance.toStringAsFixed(2)}',
+                  '${isPositive ? '+' : ''}\$${netBalance.toStringAsFixed(2)}',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -450,8 +450,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                     Text(
                       g.myBalance >= 0
-                          ? '+€${g.myBalance.toStringAsFixed(2)}'
-                          : '-€${g.myBalance.abs().toStringAsFixed(2)}',
+                          ? '+\$${g.myBalance.toStringAsFixed(2)}'
+                          : '-\$${g.myBalance.abs().toStringAsFixed(2)}',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

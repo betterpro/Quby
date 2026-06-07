@@ -107,7 +107,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         Expanded(
                           child: _StatCard(
                             label: 'Spent',
-                            value: '€${totalSpend.toStringAsFixed(2)}',
+                            value: '\$${totalSpend.toStringAsFixed(2)}',
                             icon: 'down',
                             color: QubyColors.danger,
                             isDark: isDark,
@@ -119,7 +119,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         Expanded(
                           child: _StatCard(
                             label: 'Received',
-                            value: '€${totalIn.toStringAsFixed(2)}',
+                            value: '\$${totalIn.toStringAsFixed(2)}',
                             icon: 'up',
                             color: accent,
                             isDark: isDark,

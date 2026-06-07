@@ -94,7 +94,7 @@ class GroupDetailScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '€${currentGroup.totalSpend.toStringAsFixed(2)} total · ${currentGroup.expenses.length} expenses',
+                            '\$${currentGroup.totalSpend.toStringAsFixed(2)} total · ${currentGroup.expenses.length} expenses',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               color: Colors.white.withOpacity(0.8),
@@ -179,7 +179,7 @@ class GroupDetailScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      '€${member.balance.abs().toStringAsFixed(2)}',
+                                      '\$${member.balance.abs().toStringAsFixed(2)}',
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
@@ -403,7 +403,7 @@ class _ExpenseTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '€${expense.amount.toStringAsFixed(2)}',
+                '\$${expense.amount.toStringAsFixed(2)}',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -412,8 +412,8 @@ class _ExpenseTile extends StatelessWidget {
               ),
               Text(
                 isPaidByMe
-                    ? '+€${(expense.amount - expense.perPerson).toStringAsFixed(2)}'
-                    : '-€${expense.perPerson.toStringAsFixed(2)}',
+                    ? '+\$${(expense.amount - expense.perPerson).toStringAsFixed(2)}'
+                    : '-\$${expense.perPerson.toStringAsFixed(2)}',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,

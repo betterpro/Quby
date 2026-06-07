@@ -178,7 +178,7 @@ class GroupsListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${isPositive ? '+' : ''}€${totalBalance.toStringAsFixed(2)}',
+                    '${isPositive ? '+' : ''}\$${totalBalance.toStringAsFixed(2)}',
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -208,7 +208,7 @@ class GroupsListScreen extends StatelessWidget {
                 child: _miniStat(
                   label: 'You are owed',
                   value:
-                      '€${state.groups.fold<double>(0, (s, g) => s + (g.myBalance > 0 ? g.myBalance : 0)).toStringAsFixed(2)}',
+                      '\$${state.groups.fold<double>(0, (s, g) => s + (g.myBalance > 0 ? g.myBalance : 0)).toStringAsFixed(2)}',
                   color: isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight,
                   dimColor: dimColor,
                 ),
@@ -221,7 +221,7 @@ class GroupsListScreen extends StatelessWidget {
                 child: _miniStat(
                   label: 'You owe',
                   value:
-                      '€${state.groups.fold<double>(0, (s, g) => s + (g.myBalance < 0 ? g.myBalance.abs() : 0)).toStringAsFixed(2)}',
+                      '\$${state.groups.fold<double>(0, (s, g) => s + (g.myBalance < 0 ? g.myBalance.abs() : 0)).toStringAsFixed(2)}',
                   color: QubyColors.danger,
                   dimColor: dimColor,
                 ),
@@ -353,7 +353,7 @@ class _GroupCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${isPositive ? '+' : ''}€${group.myBalance.toStringAsFixed(2)}',
+                      '${isPositive ? '+' : ''}\$${group.myBalance.toStringAsFixed(2)}',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,

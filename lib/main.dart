@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'state/app_state.dart';
 import 'theme/app_theme.dart';
-import 'screens/main_shell.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() {
   runApp(
@@ -25,7 +25,7 @@ class QubyApp extends StatelessWidget {
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         themeMode: state.isDark ? ThemeMode.dark : ThemeMode.light,
-        home: const MainShell(),
+        home: const OnboardingScreen(),
       ),
     );
   }

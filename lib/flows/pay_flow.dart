@@ -189,7 +189,7 @@ class _PayFlowState extends State<PayFlow> {
           NumPad(onKey: _onKey),
           const SizedBox(height: 16),
           QubyBtn(
-            label: _value > 0 ? 'Pay €${_value.toStringAsFixed(2)}' : 'Enter amount',
+            label: _value > 0 ? 'Pay \$${_value.toStringAsFixed(2)}' : 'Enter amount',
             onTap: _value > 0 ? _pay : null,
           ),
         ],
@@ -235,7 +235,7 @@ class _PayFlowState extends State<PayFlow> {
           Text('Payment sent!', style: GoogleFonts.spaceGrotesk(fontSize: 22, fontWeight: FontWeight.w700, color: text)),
           const SizedBox(height: 6),
           Text(
-            '€${_value.toStringAsFixed(2)} to ${_biz.name}',
+            '\$${_value.toStringAsFixed(2)} to ${_biz.name}',
             style: GoogleFonts.plusJakartaSans(fontSize: 14, color: isDark ? QubyColors.textDimDark : QubyColors.textDimLight),
           ),
           const SizedBox(height: 28),

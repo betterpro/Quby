@@ -162,7 +162,7 @@ class _SendFlowState extends State<SendFlow> {
           NumPad(onKey: _onKey),
           const SizedBox(height: 16),
           QubyBtn(
-            label: _value > 0 ? 'Send €${_value.toStringAsFixed(2)}' : 'Enter amount',
+            label: _value > 0 ? 'Send \$${_value.toStringAsFixed(2)}' : 'Enter amount',
             onTap: _value > 0 ? _send : null,
           ),
         ],
@@ -198,7 +198,7 @@ class _SendFlowState extends State<SendFlow> {
           Text('Sent!', style: GoogleFonts.spaceGrotesk(fontSize: 22, fontWeight: FontWeight.w700, color: text)),
           const SizedBox(height: 6),
           Text(
-            '€${_value.toStringAsFixed(2)} to ${_contact?.name}',
+            '\$${_value.toStringAsFixed(2)} to ${_contact?.name}',
             style: GoogleFonts.plusJakartaSans(fontSize: 14, color: isDark ? QubyColors.textDimDark : QubyColors.textDimLight),
           ),
           const SizedBox(height: 28),

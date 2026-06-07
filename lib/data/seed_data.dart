@@ -64,7 +64,7 @@ const List<Business> BUSINESSES = [
     icon: 'store',
     color: Color(0xFF3E9C8E),
     dist: '1.1 km',
-    offer: 'Lunch combo €6.50',
+    offer: r'Lunch combo $6.50',
     addr: '17 South William St',
   ),
 ];

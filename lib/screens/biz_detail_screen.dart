@@ -202,7 +202,7 @@ class BizDetailScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'Get 10 points per €1 spent',
+                                r'Get 10 points per $1 spent',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   color: dimColor,
@@ -387,7 +387,7 @@ class _QuickPaySheetState extends State<_QuickPaySheet> {
             QubyBtn(
               label: _amount.isEmpty
                   ? 'Enter amount'
-                  : 'Pay €$_amount',
+                  : 'Pay \$$_amount',
               onTap: _amount.isNotEmpty ? _pay : null,
               loading: _processing,
             ),
