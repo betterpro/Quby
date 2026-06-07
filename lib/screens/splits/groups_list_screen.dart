@@ -134,7 +134,9 @@ class GroupsListScreen extends StatelessWidget {
                 childCount: state.groups.length,
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 80 + MediaQuery.of(context).padding.bottom),
+            ),
           ],
         );
       },

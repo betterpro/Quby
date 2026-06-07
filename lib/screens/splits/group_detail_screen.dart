@@ -277,7 +277,9 @@ class GroupDetailScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 80 + MediaQuery.of(context).padding.bottom),
+              ),
             ],
           ),
         );

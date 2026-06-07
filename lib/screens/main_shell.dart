@@ -68,7 +68,10 @@ class _MainShellState extends State<MainShell> {
       backgroundColor: bg,
       body: Stack(
         children: [
-          IndexedStack(index: _tab, children: screens),
+          SafeArea(
+            bottom: false,
+            child: IndexedStack(index: _tab, children: screens),
+          ),
           Positioned(
             left: 0,
             right: 0,
