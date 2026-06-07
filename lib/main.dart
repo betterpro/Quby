@@ -7,7 +7,11 @@ import 'screens/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService.initialize();
+  try {
+    await SupabaseService.initialize();
+  } catch (_) {
+    // App works offline with seed data if Supabase is unreachable
+  }
 
   runApp(
     ChangeNotifierProvider(

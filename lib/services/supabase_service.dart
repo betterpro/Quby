@@ -20,16 +20,14 @@ class SupabaseService {
     }
   }
 
-  static String get userId => _db.auth.currentUser!.id;
+  static String? get userId => _db.auth.currentUser?.id;
 
   // ── Profile ────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>?> getProfile() async {
-    return await _db
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .maybeSingle();
+    final uid = userId;
+    if (uid == null) return null;
+    return await _db.from('profiles').select().eq('id', uid).maybeSingle();
   }
 
   static Future<void> upsertProfile({
@@ -37,8 +35,10 @@ class SupabaseService {
     required int points,
     required bool isDark,
   }) async {
+    final uid = userId;
+    if (uid == null) return;
     await _db.from('profiles').upsert({
-      'id': userId,
+      'id': uid,
       'balance': balance,
       'points': points,
       'is_dark': isDark,
@@ -56,16 +56,20 @@ class SupabaseService {
   // ── Transactions ───────────────────────────────────────────────────────────
 
   static Future<List<Transaction>> getTransactions() async {
+    final uid = userId;
+    if (uid == null) return [];
     final rows = await _db
         .from('transactions')
         .select()
-        .eq('user_id', userId)
+        .eq('user_id', uid)
         .order('date', ascending: false)
         .limit(100);
     return rows.map((r) => Transaction.fromJson(r)).toList();
   }
 
   static Future<void> insertTransaction(Transaction tx) async {
-    await _db.from('transactions').insert(tx.toJson(userId));
+    final uid = userId;
+    if (uid == null) return;
+    await _db.from('transactions').insert(tx.toJson(uid));
   }
 }
