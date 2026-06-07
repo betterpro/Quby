@@ -25,6 +25,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Create local.properties
+        run: |
+          echo "flutter.sdk=$FLUTTER_HOME" > android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT"  >> android/local.properties
+
+      - name: Patch app_links compileSdk
+        run: |
+          find "$HOME/.pub-cache" -name "build.gradle" -path "*/app_links*" \
+            -exec sed -i \
+              's/compileSdk = flutter\.compileSdkVersion/compileSdk 35/g' {} +
+
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
 
