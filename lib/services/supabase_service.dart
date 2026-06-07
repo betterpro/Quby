@@ -9,7 +9,14 @@ class SupabaseService {
   static SupabaseClient get _db => Supabase.instance.client;
 
   static Future<void> initialize() async {
-    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+        detectSessionInUri: false, // disables app_links deep-link interception
+      ),
+    );
   }
 
   // ── Auth ───────────────────────────────────────────────────────────────────
