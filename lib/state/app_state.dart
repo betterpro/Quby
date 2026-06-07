@@ -1,38 +1,87 @@
 import 'package:flutter/material.dart';
 import '../data/models.dart';
 import '../data/seed_data.dart';
+import '../services/supabase_service.dart';
 
 class AppState extends ChangeNotifier {
-  double _balance = 42.60;
-  int _points = 1840;
-  late List<Transaction> _transactions;
+  double _balance = 150.00;
+  int _points = 1240;
+  List<Transaction> _transactions = [];
+  List<Business> _businesses = List.from(BUSINESSES);
   late List<Group> _groups;
   bool _isDark = false;
+  bool _initialized = false;
+  bool _loading = true;
 
   AppState() {
-    _transactions = List.from(SEED_TRANSACTIONS);
     _groups = buildSeedGroups();
+    _transactions = List.from(SEED_TRANSACTIONS);
   }
 
   double get balance => _balance;
   int get points => _points;
   List<Transaction> get transactions => List.unmodifiable(_transactions);
+  List<Business> get businesses => List.unmodifiable(_businesses);
   List<Group> get groups => List.unmodifiable(_groups);
   bool get isDark => _isDark;
+  bool get initialized => _initialized;
+  bool get loading => _loading;
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+
+  Future<void> initialize() async {
+    try {
+      await SupabaseService.signInAnonymously();
+
+      // Load profile
+      final profile = await SupabaseService.getProfile();
+      if (profile != null) {
+        _balance = (profile['balance'] as num).toDouble();
+        _points = profile['points'] as int;
+        _isDark = profile['is_dark'] as bool? ?? false;
+      } else {
+        // First launch — create profile with defaults
+        await SupabaseService.upsertProfile(
+          balance: _balance,
+          points: _points,
+          isDark: _isDark,
+        );
+      }
+
+      // Load businesses from Supabase (falls back to seed data on error)
+      final remoteBiz = await SupabaseService.getBusinesses();
+      if (remoteBiz.isNotEmpty) _businesses = remoteBiz;
+
+      // Load transactions from Supabase
+      final remoteTx = await SupabaseService.getTransactions();
+      if (remoteTx.isNotEmpty) _transactions = remoteTx;
+    } catch (_) {
+      // Stay with seed data — offline or first-run before SQL migration
+    }
+
+    _loading = false;
+    _initialized = true;
+    notifyListeners();
+  }
+
+  // ── Theme ──────────────────────────────────────────────────────────────────
 
   void toggleTheme() {
     _isDark = !_isDark;
     notifyListeners();
+    _syncProfile();
   }
+
+  // ── Payments ───────────────────────────────────────────────────────────────
 
   void pay({
     required String businessId,
     required double amount,
     required String method,
   }) {
-    final biz = BUSINESSES.firstWhere(
+    final biz = _businesses.firstWhere(
       (b) => b.id == businessId,
-      orElse: () => BUSINESSES.first,
+      orElse: () => _businesses.first,
     );
 
     _balance -= amount;
@@ -53,12 +102,11 @@ class AppState extends ChangeNotifier {
 
     _transactions.insert(0, tx);
     notifyListeners();
+    _persistTransaction(tx);
+    _syncProfile();
   }
 
-  void topUp({
-    required double amount,
-    required String source,
-  }) {
+  void topUp({required double amount, required String source}) {
     _balance += amount;
 
     final tx = Transaction(
@@ -75,13 +123,11 @@ class AppState extends ChangeNotifier {
 
     _transactions.insert(0, tx);
     notifyListeners();
+    _persistTransaction(tx);
+    _syncProfile();
   }
 
-  void send({
-    required Contact contact,
-    required double amount,
-    String? note,
-  }) {
+  void send({required Contact contact, required double amount, String? note}) {
     _balance -= amount;
 
     final tx = Transaction(
@@ -98,7 +144,11 @@ class AppState extends ChangeNotifier {
 
     _transactions.insert(0, tx);
     notifyListeners();
+    _persistTransaction(tx);
+    _syncProfile();
   }
+
+  // ── Groups ─────────────────────────────────────────────────────────────────
 
   void addExpense({
     required String groupId,
@@ -123,39 +173,30 @@ class AppState extends ChangeNotifier {
       category: category,
     );
 
-    // Update member balances
     final updatedMembers = group.members.map((m) {
       if (splitWith.any((c) => c.id == m.contact.id)) {
-        return GroupMember(
-          contact: m.contact,
-          balance: m.balance + perPerson,
-        );
+        return GroupMember(contact: m.contact, balance: m.balance + perPerson);
       }
       return m;
     }).toList();
 
-    final updatedGroup = Group(
-      id: group.id,
-      name: group.name,
-      members: updatedMembers,
-      expenses: [expense, ...group.expenses],
-      color: group.color,
-      emoji: group.emoji,
-    );
-
     _groups = [
       ..._groups.sublist(0, groupIndex),
-      updatedGroup,
+      Group(
+        id: group.id,
+        name: group.name,
+        members: updatedMembers,
+        expenses: [expense, ...group.expenses],
+        color: group.color,
+        emoji: group.emoji,
+      ),
       ..._groups.sublist(groupIndex + 1),
     ];
 
     notifyListeners();
   }
 
-  void settleDebt({
-    required String groupId,
-    required String memberId,
-  }) {
+  void settleDebt({required String groupId, required String memberId}) {
     final groupIndex = _groups.indexWhere((g) => g.id == groupId);
     if (groupIndex == -1) return;
 
@@ -165,31 +206,24 @@ class AppState extends ChangeNotifier {
       orElse: () => group.members.first,
     );
 
-    final settlementAmount = member.balance.abs();
-    if (member.balance < 0) {
-      // We owe them — pay them
-      _balance -= settlementAmount;
-    }
+    if (member.balance < 0) _balance -= member.balance.abs();
 
-    final updatedMembers = group.members.map((m) {
-      if (m.contact.id == memberId) {
-        return GroupMember(contact: m.contact, balance: 0.0);
-      }
-      return m;
-    }).toList();
-
-    final updatedGroup = Group(
-      id: group.id,
-      name: group.name,
-      members: updatedMembers,
-      expenses: group.expenses,
-      color: group.color,
-      emoji: group.emoji,
-    );
+    final updatedMembers = group.members
+        .map((m) => m.contact.id == memberId
+            ? GroupMember(contact: m.contact, balance: 0.0)
+            : m)
+        .toList();
 
     _groups = [
       ..._groups.sublist(0, groupIndex),
-      updatedGroup,
+      Group(
+        id: group.id,
+        name: group.name,
+        members: updatedMembers,
+        expenses: group.expenses,
+        color: group.color,
+        emoji: group.emoji,
+      ),
       ..._groups.sublist(groupIndex + 1),
     ];
 
@@ -205,9 +239,7 @@ class AppState extends ChangeNotifier {
     final group = Group(
       id: 'grp_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      members: members
-          .map((c) => GroupMember(contact: c, balance: 0.0))
-          .toList(),
+      members: members.map((c) => GroupMember(contact: c, balance: 0.0)).toList(),
       expenses: [],
       color: color,
       emoji: emoji,
@@ -216,5 +248,22 @@ class AppState extends ChangeNotifier {
     _groups = [group, ..._groups];
     notifyListeners();
   }
-}
 
+  // ── Private helpers ────────────────────────────────────────────────────────
+
+  Future<void> _persistTransaction(Transaction tx) async {
+    try {
+      await SupabaseService.insertTransaction(tx);
+    } catch (_) {}
+  }
+
+  Future<void> _syncProfile() async {
+    try {
+      await SupabaseService.upsertProfile(
+        balance: _balance,
+        points: _points,
+        isDark: _isDark,
+      );
+    } catch (_) {}
+  }
+}

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'services/supabase_service.dart';
 import 'state/app_state.dart';
 import 'theme/app_theme.dart';
 import 'screens/onboarding_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseService.initialize();
+
   runApp(
     ChangeNotifierProvider(
-      create: (_) => AppState(),
+      create: (_) => AppState()..initialize(),
       child: const QubyApp(),
     ),
   );

@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 
+// ── Color helpers ─────────────────────────────────────────────────────────────
+
+Color colorFromHex(String hex) =>
+    Color(int.parse(hex.replaceFirst('#', '0xFF')));
+
+String colorToHex(Color c) =>
+    '#${c.value.toRadixString(16).substring(2).toUpperCase()}';
+
+// ── Business ──────────────────────────────────────────────────────────────────
+
 class Business {
   final String id;
   final String name;
@@ -20,7 +30,20 @@ class Business {
     this.offer,
     this.addr,
   });
+
+  factory Business.fromJson(Map<String, dynamic> j) => Business(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        cat: j['category'] as String,
+        icon: j['icon'] as String,
+        color: colorFromHex(j['color'] as String),
+        dist: j['distance'] as String,
+        offer: j['offer'] as String?,
+        addr: j['address'] as String?,
+      );
 }
+
+// ── Contact ───────────────────────────────────────────────────────────────────
 
 class Contact {
   final String id;
@@ -43,6 +66,8 @@ class Contact {
     return name.substring(0, 2).toUpperCase();
   }
 }
+
+// ── Transaction ───────────────────────────────────────────────────────────────
 
 enum TransactionType { payment, topup, send, receive, refund }
 
@@ -70,11 +95,45 @@ class Transaction {
     this.icon,
     this.iconColor,
   });
+
+  factory Transaction.fromJson(Map<String, dynamic> j) => Transaction(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        subtitle: j['subtitle'] as String,
+        amount: (j['amount'] as num).toDouble(),
+        isDebit: j['is_debit'] as bool,
+        date: DateTime.parse(j['date'] as String),
+        type: TransactionType.values.firstWhere(
+          (t) => t.name == j['type'],
+          orElse: () => TransactionType.payment,
+        ),
+        businessId: j['business_id'] as String?,
+        icon: j['icon'] as String?,
+        iconColor: j['icon_color'] != null
+            ? colorFromHex(j['icon_color'] as String)
+            : null,
+      );
+
+  Map<String, dynamic> toJson(String userId) => {
+        'id': id,
+        'user_id': userId,
+        'title': title,
+        'subtitle': subtitle,
+        'amount': amount,
+        'is_debit': isDebit,
+        'date': date.toIso8601String(),
+        'type': type.name,
+        'business_id': businessId,
+        'icon': icon,
+        'icon_color': iconColor != null ? colorToHex(iconColor!) : null,
+      };
 }
+
+// ── Group / Expense ───────────────────────────────────────────────────────────
 
 class GroupMember {
   final Contact contact;
-  final double balance; // positive = owed to you, negative = you owe
+  final double balance; // positive = they owe you, negative = you owe them
 
   const GroupMember({
     required this.contact,
@@ -121,9 +180,6 @@ class Group {
     this.emoji,
   });
 
-  double get myBalance =>
-      members.fold(0.0, (sum, m) => sum + m.balance);
-
-  double get totalSpend =>
-      expenses.fold(0.0, (sum, e) => sum + e.amount);
+  double get myBalance => members.fold(0.0, (sum, m) => sum + m.balance);
+  double get totalSpend => expenses.fold(0.0, (sum, e) => sum + e.amount);
 }
