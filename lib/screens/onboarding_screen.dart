@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 import '../widgets/q_icon.dart';
 import '../widgets/quby_mark.dart';
 import 'auth_screen.dart';

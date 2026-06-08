@@ -10,8 +10,8 @@ class AppState extends ChangeNotifier {
   List<Business> _businesses = List.from(BUSINESSES);
   late List<Group> _groups;
   bool _isDark = false;
-  bool _initialized = false;
-  bool _loading = true;
+  bool _initialized = true;
+  bool _loading = false;
 
   AppState() {
     _groups = buildSeedGroups();
