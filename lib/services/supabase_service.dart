@@ -7,9 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models.dart';
 
 class SupabaseService {
-  static const supabaseUrl = 'https://tbsuulymqbxzlzzahvgc.supabase.co';
-  static const supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRic3V1bHltcWJ4emx6emFodmdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MDM2MzgsImV4cCI6MjA5NjM3OTYzOH0.ddoFGKVrd8Rt4U2ZfIEq71bin5kL47k_AvxaaZFSFkI';
+  static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   // Set to your Google OAuth Web Client ID from Google Cloud Console
   // https://console.cloud.google.com/apis/credentials
