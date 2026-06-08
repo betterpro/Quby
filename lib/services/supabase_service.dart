@@ -9,10 +9,8 @@ import '../data/models.dart';
 class SupabaseService {
   static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
-
-  // Set to your Google OAuth Web Client ID from Google Cloud Console
-  // https://console.cloud.google.com/apis/credentials
-  static const _googleWebClientId = '';
+  static const _googleWebClientId =
+      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
   static bool _initialized = false;
   static SupabaseClient get _db => Supabase.instance.client;
