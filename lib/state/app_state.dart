@@ -30,17 +30,30 @@ class AppState extends ChangeNotifier {
   // ── Boot ───────────────────────────────────────────────────────────────────
 
   Future<void> initialize() async {
-    try {
-      await SupabaseService.signInAnonymously();
+    if (SupabaseService.isSignedIn) {
+      await _loadFromSupabase();
+    }
+    _loading = false;
+    _initialized = true;
+    notifyListeners();
+  }
 
-      // Load profile
+  Future<void> reload() async {
+    _loading = true;
+    notifyListeners();
+    await _loadFromSupabase();
+    _loading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadFromSupabase() async {
+    try {
       final profile = await SupabaseService.getProfile();
       if (profile != null) {
         _balance = (profile['balance'] as num).toDouble();
         _points = profile['points'] as int;
         _isDark = profile['is_dark'] as bool? ?? false;
       } else {
-        // First launch — create profile with defaults
         await SupabaseService.upsertProfile(
           balance: _balance,
           points: _points,
@@ -48,20 +61,14 @@ class AppState extends ChangeNotifier {
         );
       }
 
-      // Load businesses from Supabase (falls back to seed data on error)
       final remoteBiz = await SupabaseService.getBusinesses();
       if (remoteBiz.isNotEmpty) _businesses = remoteBiz;
 
-      // Load transactions from Supabase
       final remoteTx = await SupabaseService.getTransactions();
       if (remoteTx.isNotEmpty) _transactions = remoteTx;
     } catch (_) {
-      // Stay with seed data — offline or first-run before SQL migration
+      // Stay with seed data on error
     }
-
-    _loading = false;
-    _initialized = true;
-    notifyListeners();
   }
 
   // ── Theme ──────────────────────────────────────────────────────────────────
