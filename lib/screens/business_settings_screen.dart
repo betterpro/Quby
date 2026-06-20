@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/models.dart';
@@ -552,6 +554,12 @@ class _EditBusinessSheetState extends State<_EditBusinessSheet> {
   bool _loading = false;
   String _error = '';
 
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _showSuggestions = false;
+  Timer? _debounce;
+  double? _lat;
+  double? _lng;
+
   static const _categories = [
     'Food & Drink',
     'Retail',
@@ -568,16 +576,45 @@ class _EditBusinessSheetState extends State<_EditBusinessSheet> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.business.name);
     _addrCtrl = TextEditingController(text: widget.business.addr ?? '');
+    _lat = widget.business.lat;
+    _lng = widget.business.lng;
     _category = _categories.contains(widget.business.cat)
         ? widget.business.cat
         : 'Other';
+    _addrCtrl.addListener(_onAddressChanged);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
+    _addrCtrl.removeListener(_onAddressChanged);
     _nameCtrl.dispose();
     _addrCtrl.dispose();
     super.dispose();
+  }
+
+  void _onAddressChanged() {
+    _debounce?.cancel();
+    final q = _addrCtrl.text.trim();
+    if (q.isEmpty) {
+      setState(() { _suggestions = []; _showSuggestions = false; });
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () async {
+      final results = await SupabaseService.placesAutocomplete(q);
+      if (mounted) setState(() { _suggestions = results; _showSuggestions = results.isNotEmpty; });
+    });
+  }
+
+  Future<void> _selectPlace(Map<String, dynamic> suggestion) async {
+    setState(() { _showSuggestions = false; _suggestions = []; });
+    final details = await SupabaseService.placeDetails(suggestion['place_id'] as String);
+    if (!mounted) return;
+    setState(() {
+      _addrCtrl.text = details?['address'] as String? ?? suggestion['description'] as String;
+      _lat = details?['lat'] as double?;
+      _lng = details?['lng'] as double?;
+    });
   }
 
   Future<void> _save() async {
@@ -595,8 +632,9 @@ class _EditBusinessSheetState extends State<_EditBusinessSheet> {
         widget.business.id,
         name: name,
         category: _category,
-        address:
-            _addrCtrl.text.trim().isEmpty ? null : _addrCtrl.text.trim(),
+        address: _addrCtrl.text.trim().isEmpty ? null : _addrCtrl.text.trim(),
+        lat: _lat,
+        lng: _lng,
       );
       if (mounted) {
         Navigator.of(context).pop();
@@ -701,13 +739,89 @@ class _EditBusinessSheetState extends State<_EditBusinessSheet> {
           ),
           const SizedBox(height: 14),
 
-          Text('Address',
+          Text('Location',
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: widget.dimColor)),
           const SizedBox(height: 8),
-          _field(_addrCtrl, 'Street address'),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _field(_addrCtrl, 'Search address or place…'),
+              if (_showSuggestions)
+                Positioned(
+                  top: 52,
+                  left: 0,
+                  right: 0,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      decoration: BoxDecoration(
+                        color: widget.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: widget.border),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: _suggestions.length,
+                        separatorBuilder: (_, __) =>
+                            Divider(height: 1, color: widget.border),
+                        itemBuilder: (context, i) {
+                          final s = _suggestions[i];
+                          return InkWell(
+                            onTap: () => _selectPlace(s),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.location_on_outlined,
+                                      size: 16, color: widget.accent),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      s['description'] as String,
+                                      style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13,
+                                          color: widget.textColor),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (_lat != null && _lng != null) ...[
+            const SizedBox(height: 6),
+            Row(children: [
+              Icon(Icons.check_circle_outline,
+                  size: 13, color: widget.accent),
+              const SizedBox(width: 5),
+              Text(
+                'Pinned: ${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}',
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11, color: widget.accent),
+              ),
+            ]),
+          ],
           const SizedBox(height: 24),
 
           SizedBox(

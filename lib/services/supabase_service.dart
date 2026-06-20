@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'dart:io' show Platform;
 
+import 'package:http/http.dart' as http;
+
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -1021,12 +1023,61 @@ class SupabaseService {
     required String name,
     required String category,
     String? address,
+    double? lat,
+    double? lng,
   }) async {
     await _db.from('businesses').update({
       'name': name,
       'category': category,
       if (address != null) 'address': address,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
     }).eq('id', id);
+  }
+
+  static const _mapsKey =
+      String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+
+  static Future<List<Map<String, dynamic>>> placesAutocomplete(
+      String query) async {
+    if (query.isEmpty || _mapsKey.isEmpty) return [];
+    final uri = Uri.https('maps.googleapis.com',
+        '/maps/api/place/autocomplete/json', {
+      'input': query,
+      'types': 'establishment|geocode',
+      'key': _mapsKey,
+    });
+    final res = await http.get(uri);
+    if (res.statusCode != 200) return [];
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final predictions = data['predictions'] as List? ?? [];
+    return predictions
+        .map((p) => {
+              'place_id': p['place_id'] as String,
+              'description': p['description'] as String,
+            })
+        .toList();
+  }
+
+  static Future<Map<String, dynamic>?> placeDetails(String placeId) async {
+    if (_mapsKey.isEmpty) return null;
+    final uri = Uri.https('maps.googleapis.com',
+        '/maps/api/place/details/json', {
+      'place_id': placeId,
+      'fields': 'formatted_address,geometry',
+      'key': _mapsKey,
+    });
+    final res = await http.get(uri);
+    if (res.statusCode != 200) return null;
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    final result = data['result'] as Map<String, dynamic>?;
+    if (result == null) return null;
+    final loc = result['geometry']?['location'];
+    return {
+      'address': result['formatted_address'] as String?,
+      'lat': (loc?['lat'] as num?)?.toDouble(),
+      'lng': (loc?['lng'] as num?)?.toDouble(),
+    };
   }
 
   static String _generateNonce([int length = 32]) {
