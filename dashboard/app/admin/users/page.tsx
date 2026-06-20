@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { createAdminClient } from "@/lib/supabase/server";
-import { formatCurrency, formatDate, type Profile, type Transaction } from "@/lib/utils";
+import { formatCurrency, type Profile, type Transaction } from "@/lib/utils";
 import { Users, Wallet, Star } from "lucide-react";
+import { UsersTable } from "./users-table";
 
 async function fetchData(): Promise<{ profiles: Profile[]; transactions: Transaction[] }> {
   try {
@@ -32,7 +33,7 @@ async function UsersList() {
   const enrichedProfiles = profiles.map((p) => ({
     ...p,
     totalSpent: userSpend.get(p.id) || 0,
-    joinDate: p.created_at,
+    joinDate: p.created_at ?? "",
   }));
 
   const totalBalance = enrichedProfiles.reduce((s, p) => s + Number(p.balance || 0), 0);
@@ -68,87 +69,7 @@ async function UsersList() {
         </div>
       </div>
 
-      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-brand-ink-surface-2">
-          <h3 className="font-semibold text-white font-display">All Users</h3>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {profiles.length} registered QubyPay wallet users
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-xs text-gray-500 border-b border-brand-ink-line">
-                <th className="text-left px-6 py-3 font-medium">User</th>
-                <th className="text-left px-6 py-3 font-medium">Balance</th>
-                <th className="text-left px-6 py-3 font-medium">Points</th>
-                <th className="text-left px-6 py-3 font-medium">Total Spent</th>
-                <th className="text-left px-6 py-3 font-medium">Theme</th>
-                <th className="text-right px-6 py-3 font-medium">Joined</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-ink-line">
-              {enrichedProfiles.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
-                    No users yet
-                  </td>
-                </tr>
-              ) : (
-                enrichedProfiles.map((profile) => (
-                  <tr key={profile.id} className="table-row-hover">
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00B488] to-[#6366F1] flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                          {(profile.name || "U").charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {profile.name || "Anonymous"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {profile.handle || `@user_${profile.id?.slice(0, 6)}`}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span className="text-sm font-semibold text-brand-green-bright">
-                        {formatCurrency(profile.balance || 0)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span className="text-sm text-brand-honey">
-                        {(profile.points || 0).toLocaleString()} pts
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span className="text-sm text-white">
-                        {formatCurrency(profile.totalSpent)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full ${
-                          profile.is_dark
-                            ? "bg-gray-800 text-gray-300"
-                            : "bg-yellow-500/10 text-yellow-300"
-                        }`}
-                      >
-                        {profile.is_dark ? "Dark" : "Light"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-right text-sm text-gray-400">
-                      {profile.joinDate ? formatDate(profile.joinDate) : "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <UsersTable profiles={enrichedProfiles} />
     </>
   );
 }

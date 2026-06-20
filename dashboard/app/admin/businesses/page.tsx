@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 import { createAdminClient } from "@/lib/supabase/server";
-import { BusinessLogoImage } from "@/components/business-logo";
 import { formatCurrency, type Business, type Transaction } from "@/lib/utils";
 import { Building2, TrendingUp, CheckCircle2 } from "lucide-react";
-import { PendingSection } from "./pending-section";
+import { BusinessesTable } from "./businesses-table";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchData(): Promise<{ businesses: Business[]; transactions: Transaction[]; pendingRequests: any[] }> {
@@ -52,8 +51,6 @@ async function BusinessesList() {
 
   return (
     <>
-      <PendingSection requests={pendingRequests} />
-
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
@@ -80,85 +77,7 @@ async function BusinessesList() {
         </div>
       </div>
 
-      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-brand-ink-surface-2">
-          <h3 className="font-semibold text-white font-display">All Businesses</h3>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {businesses.length} businesses on the QubyPay platform
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-xs text-gray-500 border-b border-brand-ink-line">
-                <th className="text-left px-6 py-3 font-medium">Business</th>
-                <th className="text-left px-6 py-3 font-medium">Category</th>
-                <th className="text-left px-6 py-3 font-medium">Offer</th>
-                <th className="text-left px-6 py-3 font-medium">Transactions</th>
-                <th className="text-left px-6 py-3 font-medium">Status</th>
-                <th className="text-right px-6 py-3 font-medium">Revenue</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-brand-ink-line">
-              {enrichedBusinesses.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
-                    No businesses yet
-                  </td>
-                </tr>
-              ) : (
-                enrichedBusinesses.map((biz) => (
-                  <tr key={biz.id} className="table-row-hover">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 overflow-hidden"
-                          style={{ backgroundColor: `${biz.color || "#00B488"}20` }}
-                        >
-                          {biz.logo_url ? (
-                            <BusinessLogoImage
-                              logoUrl={biz.logo_url}
-                              className="w-full h-full object-cover"
-                              fallback={<span>{biz.icon || "🏪"}</span>}
-                            />
-                          ) : (
-                            biz.icon || "🏪"
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">{biz.name}</p>
-                          <p className="text-xs text-gray-500">{biz.address || "—"}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs bg-brand-ink-surface-2 text-gray-300 px-2 py-1 rounded-full">
-                        {biz.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-400 max-w-[180px] truncate">
-                      {biz.offer || "—"}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{biz.txnCount}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 text-xs text-brand-green-bright bg-brand-green/10 px-2 py-0.5 rounded-full">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#00D193]" />
-                        Active
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-semibold text-white">
-                        {formatCurrency(biz.revenue)}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <BusinessesTable businesses={enrichedBusinesses} pendingRequests={pendingRequests} />
     </>
   );
 }
