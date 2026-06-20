@@ -111,9 +111,14 @@ export async function updateBusiness(
 export async function deleteBusiness(id: string): Promise<{ error?: string }> {
   const supabase = createAdminClient();
 
-  // Clear FK reference in business_requests before deleting
+  // Clear FK references before deleting
   await supabase
     .from("business_requests")
+    .update({ business_id: null })
+    .eq("business_id", id);
+
+  await supabase
+    .from("transactions")
     .update({ business_id: null })
     .eq("business_id", id);
 
