@@ -5,6 +5,7 @@
       "name": "Quby (debug)",
       "request": "launch",
       "type": "dart",
+      "preLaunchTask": "ensure-dart-defines",
       "toolArgs": [
         "--dart-define-from-file=dart-defines.json"
       ]
