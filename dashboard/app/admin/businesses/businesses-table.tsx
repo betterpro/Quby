@@ -46,6 +46,7 @@ export function BusinessesTable({ businesses, pendingRequests }: Props) {
   const [editingBusiness, setEditingBusiness] = useState<EnrichedBusiness | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function openCreate() {
     setEditingBusiness(null);
@@ -98,9 +99,14 @@ export function BusinessesTable({ businesses, pendingRequests }: Props) {
   }
 
   function handleDelete(id: string) {
+    setDeleteError(null);
     startTransition(async () => {
-      await deleteBusiness(id);
-      setDeletingId(null);
+      const result = await deleteBusiness(id);
+      if (result?.error) {
+        setDeleteError(result.error);
+      } else {
+        setDeletingId(null);
+      }
     });
   }
 
@@ -111,6 +117,13 @@ export function BusinessesTable({ businesses, pendingRequests }: Props) {
   return (
     <>
       <PendingSection requests={pendingRequests} />
+
+      {deleteError && (
+        <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 flex items-center justify-between">
+          <span>Delete failed: {deleteError}</span>
+          <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-300 ml-4">✕</button>
+        </div>
+      )}
 
       <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-brand-ink-surface-2 flex items-center justify-between">
