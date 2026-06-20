@@ -978,6 +978,57 @@ class SupabaseService {
     return false;
   }
 
+  // ── Business requests ──────────────────────────────────────────────────────
+
+  static Future<void> submitBusinessRequest({
+    required String name,
+    required String category,
+    String? address,
+    String? description,
+  }) async {
+    final uid = userId;
+    if (uid == null) return;
+    await _db.from('business_requests').insert({
+      'user_id': uid,
+      'name': name,
+      'category': category,
+      if (address != null) 'address': address,
+      if (description != null) 'description': description,
+    });
+  }
+
+  static Future<List<BusinessRequest>> getMyBusinessRequests() async {
+    final uid = userId;
+    if (uid == null) return [];
+    final rows = await _db
+        .from('business_requests')
+        .select()
+        .eq('user_id', uid)
+        .order('created_at', ascending: false);
+    return rows.map((r) => BusinessRequest.fromJson(r)).toList();
+  }
+
+  static Future<List<Business>> getMyBusinesses() async {
+    final uid = userId;
+    if (uid == null) return [];
+    final rows =
+        await _db.from('businesses').select().eq('owner_id', uid);
+    return rows.map((r) => Business.fromJson(r)).toList();
+  }
+
+  static Future<void> updateBusiness(
+    String id, {
+    required String name,
+    required String category,
+    String? address,
+  }) async {
+    await _db.from('businesses').update({
+      'name': name,
+      'category': category,
+      if (address != null) 'address': address,
+    }).eq('id', id);
+  }
+
   static String _generateNonce([int length = 32]) {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';

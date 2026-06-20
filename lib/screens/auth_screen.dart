@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/quby_mark.dart';
 import 'main_shell.dart';
+import 'register_business_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,6 +21,7 @@ class _AuthScreenState extends State<AuthScreen>
   bool _isSignIn = true;
   bool _loading = false;
   bool _obscure = true;
+  bool _isBusinessSignup = false;
   String _error = '';
 
   final _emailCtrl = TextEditingController();
@@ -47,19 +49,26 @@ class _AuthScreenState extends State<AuthScreen>
     super.dispose();
   }
 
-  void _navigateToApp() {
+  void _navigateToApp({bool registerBusiness = false}) {
     final appState = context.read<AppState>();
-    Navigator.of(context).pushAndRemoveUntil(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainShell(),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
-          opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
-          child: child,
+    if (registerBusiness) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const RegisterBusinessScreen()),
+        (_) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainShell(),
+          transitionsBuilder: (_, anim, __, child) => FadeTransition(
+            opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+            child: child,
+          ),
+          transitionDuration: const Duration(milliseconds: 500),
         ),
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
-      (_) => false,
-    );
+        (_) => false,
+      );
+    }
     appState.reload();
   }
 
@@ -106,7 +115,7 @@ class _AuthScreenState extends State<AuthScreen>
             ),
           );
         } else {
-          _navigateToApp();
+          _navigateToApp(registerBusiness: _isBusinessSignup);
         }
       }
     } catch (e) {
@@ -253,6 +262,7 @@ class _AuthScreenState extends State<AuthScreen>
                       onToggle: (v) => setState(() {
                         _isSignIn = v;
                         _error = '';
+                        if (v) _isBusinessSignup = false;
                       }),
                     ),
                     const SizedBox(height: 24),
@@ -287,6 +297,12 @@ class _AuthScreenState extends State<AuthScreen>
                         controller: _confirmCtrl,
                         obscure: _obscure,
                         onToggle: () => setState(() => _obscure = !_obscure),
+                      ),
+                      const SizedBox(height: 16),
+                      _BusinessToggle(
+                        value: _isBusinessSignup,
+                        onChanged: (v) =>
+                            setState(() => _isBusinessSignup = v),
                       ),
                     ],
 
@@ -647,6 +663,82 @@ class _GoogleG extends StatelessWidget {
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: Color(0xFF4285F4),
+      ),
+    );
+  }
+}
+
+class _BusinessToggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _BusinessToggle({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
+    final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
+    final border = isDark ? QubyColors.lineDark : QubyColors.lineLight;
+    final textColor = isDark ? QubyColors.textDark : QubyColors.textLight;
+    final dimColor = isDark ? QubyColors.textDimDark : QubyColors.textDimLight;
+
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: value ? accent.withValues(alpha: 0.08) : surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: value ? accent.withValues(alpha: 0.3) : border,
+          ),
+        ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: value ? accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: value ? accent : border,
+                  width: 1.5,
+                ),
+              ),
+              child: value
+                  ? Icon(Icons.check, size: 13,
+                      color: isDark ? QubyColors.accentGreenOnDark : QubyColors.accentGreenOnLight)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Register as a business owner',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                  Text(
+                    'Submit your business for admin review after sign-up',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: dimColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

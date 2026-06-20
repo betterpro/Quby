@@ -22,6 +22,8 @@ class Business {
   final double? lat;
   final double? lng;
   final String? logoUrl;
+  final String? ownerId;
+  final String status;
 
   const Business({
     required this.id,
@@ -35,6 +37,8 @@ class Business {
     this.lat,
     this.lng,
     this.logoUrl,
+    this.ownerId,
+    this.status = 'active',
   });
 
   bool get hasLocation => lat != null && lng != null;
@@ -51,6 +55,49 @@ class Business {
         lat: (j['latitude'] as num?)?.toDouble(),
         lng: (j['longitude'] as num?)?.toDouble(),
         logoUrl: j['logo_url'] as String?,
+        ownerId: j['owner_id'] as String?,
+        status: j['status'] as String? ?? 'active',
+      );
+}
+
+// ── BusinessRequest ───────────────────────────────────────────────────────────
+
+class BusinessRequest {
+  final String id;
+  final String userId;
+  final String name;
+  final String category;
+  final String? address;
+  final String? description;
+  final String status; // pending | approved | rejected
+  final String? rejectionReason;
+  final String? businessId;
+  final DateTime createdAt;
+
+  const BusinessRequest({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.category,
+    this.address,
+    this.description,
+    required this.status,
+    this.rejectionReason,
+    this.businessId,
+    required this.createdAt,
+  });
+
+  factory BusinessRequest.fromJson(Map<String, dynamic> j) => BusinessRequest(
+        id: j['id'] as String,
+        userId: j['user_id'] as String,
+        name: j['name'] as String,
+        category: j['category'] as String,
+        address: j['address'] as String?,
+        description: j['description'] as String?,
+        status: j['status'] as String,
+        rejectionReason: j['rejection_reason'] as String?,
+        businessId: j['business_id'] as String?,
+        createdAt: DateTime.parse(j['created_at'] as String),
       );
 }
 

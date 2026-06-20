@@ -3,25 +3,29 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { BusinessLogoImage } from "@/components/business-logo";
 import { formatCurrency, type Business, type Transaction } from "@/lib/utils";
 import { Building2, TrendingUp, CheckCircle2 } from "lucide-react";
+import { PendingSection } from "./pending-section";
 
-async function fetchData(): Promise<{ businesses: Business[]; transactions: Transaction[] }> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchData(): Promise<{ businesses: Business[]; transactions: Transaction[]; pendingRequests: any[] }> {
   try {
     const supabase = createAdminClient();
-    const [bizRes, txnRes] = await Promise.all([
+    const [bizRes, txnRes, reqRes] = await Promise.all([
       supabase.from("businesses").select("*"),
       supabase.from("transactions").select("*"),
+      supabase.from("business_requests").select("*").eq("status", "pending").order("created_at", { ascending: false }),
     ]);
     return {
       businesses: (bizRes.data as Business[]) ?? [],
       transactions: (txnRes.data as Transaction[]) ?? [],
+      pendingRequests: reqRes.data ?? [],
     };
   } catch {
-    return { businesses: [], transactions: [] };
+    return { businesses: [], transactions: [], pendingRequests: [] };
   }
 }
 
 async function BusinessesList() {
-  const { businesses, transactions } = await fetchData();
+  const { businesses, transactions, pendingRequests } = await fetchData();
 
   const bizRevenue = new Map<string, { revenue: number; txnCount: number }>();
   transactions
@@ -48,6 +52,8 @@ async function BusinessesList() {
 
   return (
     <>
+      <PendingSection requests={pendingRequests} />
+
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
