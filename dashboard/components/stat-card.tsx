@@ -20,13 +20,13 @@ export function StatCard({
   description,
 }: StatCardProps) {
   const changeColors = {
-    positive: "text-[#00D193]",
+    positive: "text-brand-green-bright",
     negative: "text-red-400",
     neutral: "text-gray-400",
   };
 
   return (
-    <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl p-5 hover:border-[#00B488]/30 transition-colors">
+    <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-5 hover:border-brand-green/30 transition-colors">
       <div className="flex items-start justify-between mb-4">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -41,10 +41,10 @@ export function StatCard({
         )}
       </div>
       <div>
-        <p className="text-2xl font-bold text-white mb-1">{value}</p>
-        <p className="text-sm text-gray-400">{title}</p>
+        <p className="text-2xl font-bold font-mono text-brand-ink-text mb-1">{value}</p>
+        <p className="text-sm text-brand-ink-dim">{title}</p>
         {description && (
-          <p className="text-xs text-gray-500 mt-1">{description}</p>
+          <p className="text-xs text-brand-ink-dim/70 mt-1">{description}</p>
         )}
       </div>
     </div>
@@ -53,14 +53,14 @@ export function StatCard({
 
 export function StatCardSkeleton() {
   return (
-    <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl p-5 animate-pulse">
+    <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-5 animate-pulse">
       <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 rounded-lg bg-[#1E4030]" />
-        <div className="w-12 h-4 rounded bg-[#1E4030]" />
+        <div className="w-10 h-10 rounded-lg bg-brand-ink-surface-2" />
+        <div className="w-12 h-4 rounded bg-brand-ink-surface-2" />
       </div>
       <div>
-        <div className="w-24 h-7 rounded bg-[#1E4030] mb-2" />
-        <div className="w-32 h-4 rounded bg-[#1E4030]" />
+        <div className="w-24 h-7 rounded bg-brand-ink-surface-2 mb-2" />
+        <div className="w-32 h-4 rounded bg-brand-ink-surface-2" />
       </div>
     </div>
   );

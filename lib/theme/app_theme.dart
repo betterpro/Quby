@@ -9,7 +9,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: QubyColors.bgLight,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: QubyColors.accentGreenLight,
         onPrimary: Colors.white,
         secondary: QubyColors.accentGreenLight,
@@ -28,9 +28,10 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        titleTextStyle: GoogleFonts.spaceGrotesk(
           fontSize: 17,
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.02,
           color: QubyColors.textLight,
         ),
         iconTheme: const IconThemeData(color: QubyColors.textLight),
@@ -41,7 +42,7 @@ class AppTheme {
         thickness: 1,
         space: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: QubyColors.surfaceLight,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -85,7 +86,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: QubyColors.bgDark,
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.dark(
         primary: QubyColors.accentGreenDark,
         onPrimary: QubyColors.accentGreenOnDark,
         secondary: QubyColors.accentGreenDark,
@@ -104,9 +105,10 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        titleTextStyle: GoogleFonts.spaceGrotesk(
           fontSize: 17,
           fontWeight: FontWeight.w700,
+          letterSpacing: -0.02,
           color: QubyColors.textDark,
         ),
         iconTheme: const IconThemeData(color: QubyColors.textDark),
@@ -117,7 +119,7 @@ class AppTheme {
         thickness: 1,
         space: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: QubyColors.surfaceDark,
         elevation: 0,
         shape: RoundedRectangleBorder(

@@ -48,6 +48,7 @@ export default function LoginForm() {
       }
 
       if (data.session) {
+        await supabase.rpc("complete_business_signup");
         router.push(destination);
         router.refresh();
       }
@@ -86,10 +87,10 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A1F15] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-brand-ink-bg flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[#00B488]/5 blur-[100px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-brand-green/5 blur-[100px]" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
@@ -101,13 +102,13 @@ export default function LoginForm() {
           Back to home
         </Link>
 
-        <div className="bg-[#0F2518] border border-[#1E4030] rounded-2xl p-8">
+        <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-2xl p-8">
           {/* Logo + title */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <Logo size="md" href={undefined} />
             </div>
-            <h1 className="text-2xl font-bold font-grotesk text-white mb-2">
+            <h1 className="text-2xl font-bold font-display text-white mb-2">
               {isAdmin ? "Admin Login" : "Business Login"}
             </h1>
             <p className="text-gray-400 text-sm">
@@ -131,7 +132,7 @@ export default function LoginForm() {
               type="button"
               onClick={handleGoogle}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-[#0A1F15] border border-[#1A3828] hover:border-[#2A5040] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-all text-sm"
+              className="w-full flex items-center justify-center gap-3 bg-brand-ink-bg border border-brand-ink-line hover:border-brand-ink-surface-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-all text-sm"
             >
               <span className="text-[#4285F4] font-bold text-base leading-none">G</span>
               Continue with Google
@@ -141,7 +142,7 @@ export default function LoginForm() {
               type="button"
               onClick={handleApple}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-[#0A1F15] border border-[#1A3828] hover:border-[#2A5040] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-all text-sm"
+              className="w-full flex items-center justify-center gap-3 bg-brand-ink-bg border border-brand-ink-line hover:border-brand-ink-surface-2 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-all text-sm"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" aria-hidden="true">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.29.07 2.18.74 2.94.8 1.11-.21 2.19-.92 3.38-.84 1.43.1 2.5.62 3.22 1.57-2.81 1.8-2.15 5.4.84 6.71-.66 1.37-1.47 2.72-2.38 4.64zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
@@ -152,9 +153,9 @@ export default function LoginForm() {
 
           {/* Divider */}
           <div className="relative flex items-center mb-6">
-            <div className="flex-grow border-t border-[#1E4030]" />
+            <div className="flex-grow border-t border-brand-ink-surface-2" />
             <span className="mx-3 text-xs text-gray-600">or sign in with email</span>
-            <div className="flex-grow border-t border-[#1E4030]" />
+            <div className="flex-grow border-t border-brand-ink-surface-2" />
           </div>
 
           {/* Email/password form */}
@@ -169,7 +170,7 @@ export default function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@business.com"
                 required
-                className="w-full bg-[#0A1F15] border border-[#1A3828] rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#00B488] transition-colors text-sm"
+                className="w-full bg-brand-ink-bg border border-brand-ink-line rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-brand-green transition-colors text-sm"
               />
             </div>
 
@@ -184,7 +185,7 @@ export default function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[#0A1F15] border border-[#1A3828] rounded-lg px-4 py-3 pr-10 text-white placeholder-gray-600 focus:outline-none focus:border-[#00B488] transition-colors text-sm"
+                  className="w-full bg-brand-ink-bg border border-brand-ink-line rounded-lg px-4 py-3 pr-10 text-white placeholder-gray-600 focus:outline-none focus:border-brand-green transition-colors text-sm"
                 />
                 <button
                   type="button"
@@ -199,7 +200,7 @@ export default function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#00B488] hover:bg-[#00D193] disabled:opacity-60 disabled:cursor-not-allowed text-[#0A1F15] py-3 rounded-lg font-bold transition-all text-sm"
+              className="w-full bg-brand-green hover:bg-brand-green-bright disabled:opacity-60 disabled:cursor-not-allowed text-brand-on-green py-3 rounded-lg font-bold transition-all text-sm"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -217,9 +218,9 @@ export default function LoginForm() {
 
           <p className="text-center text-xs text-gray-600 mt-6">
             Don&apos;t have an account?{" "}
-            <a href="mailto:hello@qubypay.com" className="text-[#00B488] hover:text-[#00D193]">
-              Contact us
-            </a>
+            <Link href="/signup" className="text-[#00B488] hover:text-brand-green-bright">
+              Sign up your business
+            </Link>
           </p>
         </div>
       </div>

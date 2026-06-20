@@ -12,26 +12,25 @@ import {
 import {
   formatCurrency,
   formatDate,
-  MOCK_TRANSACTIONS,
-  MOCK_BUSINESSES,
-  generateRevenueData,
+  buildRevenueData,
+  type Transaction,
 } from "@/lib/utils";
 
-async function DashboardStats() {
-  let transactions = MOCK_TRANSACTIONS;
-  let businesses = MOCK_BUSINESSES;
-
+async function fetchTransactions(): Promise<Transaction[]> {
   try {
     const supabase = createAdminClient();
-    const [txnRes, bizRes] = await Promise.all([
-      supabase.from("transactions").select("*").order("date", { ascending: false }),
-      supabase.from("businesses").select("*"),
-    ]);
-    if (txnRes.data && txnRes.data.length > 0) transactions = txnRes.data;
-    if (bizRes.data && bizRes.data.length > 0) businesses = bizRes.data;
+    const { data } = await supabase
+      .from("transactions")
+      .select("*")
+      .order("date", { ascending: false });
+    return (data as Transaction[]) ?? [];
   } catch {
-    // Use mock data
+    return [];
   }
+}
+
+async function DashboardStats() {
+  const transactions = await fetchTransactions();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -39,112 +38,103 @@ async function DashboardStats() {
   const todayTxns = transactions.filter(
     (t) => new Date(t.date) >= today && t.is_debit
   );
-  const todayRevenue = todayTxns.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const todayRevenue = todayTxns.reduce(
+    (sum, t) => sum + Math.abs(Number(t.amount)),
+    0
+  );
 
-  const totalRevenue = transactions
-    .filter((t) => t.is_debit)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-
-  const uniqueCustomers = new Set(transactions.map((t) => t.user_id)).size;
+  const uniqueCustomers = new Set(
+    transactions.filter((t) => t.user_id).map((t) => t.user_id)
+  ).size;
 
   const pointsIssued = transactions
     .filter((t) => !t.is_debit && t.type === "points")
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
 
-  const revenueData = generateRevenueData(7);
-
+  const revenueData = buildRevenueData(transactions, 7);
   const recentTxns = transactions.slice(0, 8);
 
   return (
     <>
-      {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Today's Revenue"
-          value={formatCurrency(todayRevenue || 847.5)}
-          change="+12.3%"
-          changeType="positive"
+          value={formatCurrency(todayRevenue)}
           icon={DollarSign}
           iconColor="#00B488"
-          description="vs yesterday"
         />
         <StatCard
           title="Total Transactions"
-          value={(transactions.length || 284).toString()}
-          change="+5.7%"
-          changeType="positive"
+          value={transactions.length.toString()}
           icon={ArrowLeftRight}
           iconColor="#6366F1"
-          description="this month"
         />
         <StatCard
           title="Active Customers"
-          value={(uniqueCustomers || 156).toString()}
-          change="+8.2%"
-          changeType="positive"
+          value={uniqueCustomers.toString()}
           icon={Users}
-          iconColor="#F6B43C"
-          description="unique visitors"
+          iconColor="#E2911F"
         />
         <StatCard
           title="Points Issued"
-          value={(pointsIssued || 4200).toLocaleString()}
-          change="+15.1%"
-          changeType="positive"
+          value={pointsIssued.toLocaleString()}
           icon={Star}
           iconColor="#00D193"
-          description="loyalty points"
         />
       </div>
 
-      {/* Chart */}
       <div className="mb-8">
         <RevenueChart data={revenueData} />
       </div>
 
-      {/* Recent transactions */}
-      <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#1E4030] flex items-center justify-between">
+      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-brand-ink-surface-2 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-white font-grotesk">Recent Transactions</h3>
+            <h3 className="font-semibold text-white font-display">Recent Transactions</h3>
             <p className="text-xs text-gray-400 mt-0.5">Latest activity at your business</p>
           </div>
           <a
             href="/dashboard/transactions"
-            className="text-xs text-[#00B488] hover:text-[#00D193] transition-colors"
+            className="text-xs text-[#00B488] hover:text-brand-green-bright transition-colors"
           >
             View all →
           </a>
         </div>
-        <div className="divide-y divide-[#1A3828]">
-          {recentTxns.map((txn) => (
-            <div key={txn.id} className="flex items-center justify-between px-6 py-3.5 table-row-hover">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-base"
-                  style={{ backgroundColor: `${txn.icon_color || "#00B488"}20` }}
-                >
-                  {txn.icon || "💳"}
+        {recentTxns.length === 0 ? (
+          <div className="px-6 py-12 text-center text-sm text-gray-500">
+            No transactions yet
+          </div>
+        ) : (
+          <div className="divide-y divide-brand-ink-line">
+            {recentTxns.map((txn) => (
+              <div key={txn.id} className="flex items-center justify-between px-6 py-3.5 table-row-hover">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-base"
+                    style={{ backgroundColor: `${txn.icon_color || "#00B488"}20` }}
+                  >
+                    {txn.icon || "💳"}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{txn.title}</p>
+                    <p className="text-xs text-gray-500">{txn.subtitle}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{txn.title}</p>
-                  <p className="text-xs text-gray-500">{txn.subtitle}</p>
+                <div className="text-right">
+                  <p
+                    className={`text-sm font-semibold ${
+                      txn.is_debit ? "text-red-400" : "text-brand-green-bright"
+                    }`}
+                  >
+                    {txn.is_debit ? "-" : "+"}
+                    {formatCurrency(txn.amount)}
+                  </p>
+                  <p className="text-xs text-gray-500">{formatDate(txn.date)}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p
-                  className={`text-sm font-semibold ${
-                    txn.is_debit ? "text-red-400" : "text-[#00D193]"
-                  }`}
-                >
-                  {txn.is_debit ? "-" : "+"}
-                  {formatCurrency(txn.amount)}
-                </p>
-                <p className="text-xs text-gray-500">{formatDate(txn.date)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
@@ -156,8 +146,8 @@ function StatsSkeleton() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)}
       </div>
-      <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl h-72 animate-pulse mb-8" />
-      <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl h-64 animate-pulse" />
+      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl h-72 animate-pulse mb-8" />
+      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl h-64 animate-pulse" />
     </>
   );
 }
@@ -165,10 +155,9 @@ function StatsSkeleton() {
 export default function DashboardPage() {
   return (
     <div className="animate-fadeIn">
-      {/* Page header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold font-grotesk text-white">Overview</h1>
+          <h1 className="text-2xl font-bold font-display text-white">Overview</h1>
           <p className="text-gray-400 text-sm mt-1">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
@@ -178,7 +167,7 @@ export default function DashboardPage() {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#00D193] bg-[#00B488]/10 border border-[#00B488]/20 rounded-full px-3 py-1.5">
+        <div className="flex items-center gap-2 text-xs text-brand-green-bright bg-brand-green/10 border border-brand-green/20 rounded-full px-3 py-1.5">
           <TrendingUp size={12} />
           <span>All systems operational</span>
         </div>

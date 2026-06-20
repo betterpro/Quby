@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
 import '../widgets/q_icon.dart';
+import '../widgets/safe_layout.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -62,9 +63,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
     final textColor = isDark ? QubyColors.textDark : QubyColors.textLight;
     final dimColor = isDark ? QubyColors.textDimDark : QubyColors.textDimLight;
     final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
-    final surface2 = isDark ? QubyColors.surface2Dark : QubyColors.surface2Light;
+    final surface2 =
+        isDark ? QubyColors.surface2Dark : QubyColors.surface2Light;
     final border = isDark ? QubyColors.lineDark : QubyColors.lineLight;
-    final accent = isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
+    final accent =
+        isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
 
     return Consumer<AppState>(
       builder: (context, state, _) {
@@ -161,8 +164,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       final selected = _filterIndex == e.key;
                       return Expanded(
                         child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _filterIndex = e.key),
+                          onTap: () => setState(() => _filterIndex = e.key),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -247,9 +249,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   ),
                 ),
               ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: 80 + MediaQuery.of(context).padding.bottom),
-            ),
+            const SliverToBoxAdapter(child: TabScrollSpacer()),
           ],
         );
       },
@@ -295,7 +295,7 @@ class _StatCard extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Center(child: qIcon(icon, 16, color)),

@@ -1,11 +1,11 @@
 {
-    "name": "quby_app",
-    "short_name": "quby_app",
+    "name": "Quby",
+    "short_name": "Quby",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0A0F1A",
+    "theme_color": "#00B488",
+    "description": "The smart wallet for everyday spending, splitting, and earning.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -2,24 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../data/models.dart';
-import '../data/seed_data.dart';
 import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
 import '../widgets/q_icon.dart';
 import '../widgets/quby_mark.dart';
+import '../widgets/safe_layout.dart';
 import 'biz_detail_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onPayTap;
   final VoidCallback onTopUpTap;
   final VoidCallback onSendTap;
+  final VoidCallback onSplitTap;
+  final VoidCallback onExploreTap;
+  final VoidCallback onActivityTap;
 
   const HomeScreen({
     super.key,
     required this.onPayTap,
     required this.onTopUpTap,
     required this.onSendTap,
+    required this.onSplitTap,
+    required this.onExploreTap,
+    required this.onActivityTap,
   });
 
   void _pushBizDetail(BuildContext context, Business biz) {
@@ -54,7 +61,8 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: _buildHeader(context, isDark, textColor, dimColor),
+                child:
+                    _buildHeader(context, state, isDark, textColor, dimColor),
               ),
             ),
             SliverToBoxAdapter(
@@ -71,21 +79,22 @@ class HomeScreen extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 0, 0),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: SectionTitle(
                   title: 'Your spots',
                   action: 'See all',
-                  onAction: () {},
+                  onAction: onExploreTap,
                 ),
               ),
             ),
             SliverToBoxAdapter(
-              child: _buildBizCarousel(context),
+              child: _buildBizCarousel(context, state),
             ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: _buildGroupsCard(context, state, isDark, textColor, dimColor),
+                child: _buildGroupsCard(
+                    context, state, isDark, textColor, dimColor),
               ),
             ),
             SliverToBoxAdapter(
@@ -94,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                 child: SectionTitle(
                   title: 'Recent',
                   action: 'All activity',
-                  onAction: () {},
+                  onAction: onActivityTap,
                 ),
               ),
             ),
@@ -115,16 +124,15 @@ class HomeScreen extends StatelessWidget {
                 childCount: state.transactions.take(5).length,
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: 80 + MediaQuery.of(context).padding.bottom),
-            ),
+            const SliverToBoxAdapter(child: TabScrollSpacer()),
           ],
         );
       },
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, Color textColor, Color dimColor) {
+  Widget _buildHeader(BuildContext context, AppState state, bool isDark,
+      Color textColor, Color dimColor) {
     return Row(
       children: [
         const QubyMark(size: 28),
@@ -139,24 +147,12 @@ class HomeScreen extends StatelessWidget {
         ),
         const Spacer(),
         GestureDetector(
-          onTap: () {},
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFF5B6CE0),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                'MO',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          onTap: () =>
+              Navigator.of(context).push(_slideRoute(const ProfileScreen())),
+          child: Avatar(
+            initials: state.me.initials,
+            color: state.me.color,
+            size: 36,
           ),
         ),
       ],
@@ -184,14 +180,15 @@ class HomeScreen extends StatelessWidget {
                 'Balance',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -259,7 +256,7 @@ class HomeScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -271,7 +268,7 @@ class HomeScreen extends StatelessWidget {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -304,12 +301,20 @@ class HomeScreen extends StatelessWidget {
 
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(right: e.key < actions.length - 1 ? 10 : 0),
+            padding:
+                EdgeInsets.only(right: e.key < actions.length - 1 ? 10 : 0),
             child: GestureDetector(
               onTap: () {
-                if (e.value['label'] == 'Pay') onPayTap();
-                if (e.value['label'] == 'Send') onSendTap();
-                if (e.value['label'] == 'Top Up') onTopUpTap();
+                switch (e.value['label'] as String) {
+                  case 'Pay':
+                    onPayTap();
+                  case 'Send':
+                    onSendTap();
+                  case 'Top Up':
+                    onTopUpTap();
+                  case 'Split':
+                    onSplitTap();
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -340,18 +345,22 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBizCarousel(BuildContext context) {
+  Widget _buildBizCarousel(BuildContext context, AppState state) {
+    if (state.businesses.isEmpty) {
+      return const SizedBox(height: 12);
+    }
     return SizedBox(
       height: 164,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-        itemCount: BUSINESSES.length,
+        itemCount: state.businesses.length,
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
+          final biz = state.businesses[i];
           return BizBadge(
-            biz: BUSINESSES[i],
-            onTap: () => _pushBizDetail(context, BUSINESSES[i]),
+            biz: biz,
+            onTap: () => _pushBizDetail(context, biz),
           );
         },
       ),
@@ -393,8 +402,8 @@ class HomeScreen extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: isPositive
-                      ? accent.withOpacity(0.12)
-                      : QubyColors.danger.withOpacity(0.12),
+                      ? accent.withValues(alpha: 0.12)
+                      : QubyColors.danger.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -417,7 +426,7 @@ class HomeScreen extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: g.color.withOpacity(0.15),
+                        color: g.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(

@@ -25,203 +25,83 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");
 }
 
-// Mock data for demo fallback
-export const MOCK_BUSINESSES = [
-  {
-    id: "biz_1",
-    name: "Green Leaf Cafe",
-    category: "Food & Drink",
-    icon: "☕",
-    color: "#00B488",
-    distance: "0.2 mi",
-    offer: "10% off all drinks",
-    address: "123 Main St",
-  },
-  {
-    id: "biz_2",
-    name: "Urban Cuts",
-    category: "Beauty",
-    icon: "✂️",
-    color: "#F6B43C",
-    distance: "0.5 mi",
-    offer: "Free trim with 5 visits",
-    address: "456 Oak Ave",
-  },
-  {
-    id: "biz_3",
-    name: "Tech Repair Hub",
-    category: "Electronics",
-    icon: "📱",
-    color: "#6366F1",
-    distance: "0.8 mi",
-    offer: "15% off screen repairs",
-    address: "789 Pine Blvd",
-  },
-  {
-    id: "biz_4",
-    name: "Sunrise Bakery",
-    category: "Food & Drink",
-    icon: "🥐",
-    color: "#F59E0B",
-    distance: "1.1 mi",
-    offer: "Buy 5 get 1 free",
-    address: "321 Elm St",
-  },
-  {
-    id: "biz_5",
-    name: "FitZone Gym",
-    category: "Health",
-    icon: "💪",
-    color: "#EF4444",
-    distance: "1.3 mi",
-    offer: "Free first class",
-    address: "654 Maple Dr",
-  },
-];
+export type Transaction = {
+  id: string;
+  title: string;
+  subtitle: string;
+  amount: number;
+  is_debit: boolean;
+  date: string;
+  type: string;
+  business_id: string | null;
+  icon?: string | null;
+  icon_color?: string | null;
+  user_id?: string;
+};
 
-export const MOCK_TRANSACTIONS = [
-  {
-    id: "txn_1",
-    title: "Green Leaf Cafe",
-    subtitle: "Coffee & Pastry",
-    amount: -12.5,
-    is_debit: true,
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    type: "purchase",
-    business_id: "biz_1",
-    icon: "☕",
-    icon_color: "#00B488",
-    user_id: "user_1",
-  },
-  {
-    id: "txn_2",
-    title: "Urban Cuts",
-    subtitle: "Haircut",
-    amount: -35.0,
-    is_debit: true,
-    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    type: "purchase",
-    business_id: "biz_2",
-    icon: "✂️",
-    icon_color: "#F6B43C",
-    user_id: "user_2",
-  },
-  {
-    id: "txn_3",
-    title: "Points Earned",
-    subtitle: "Loyalty reward",
-    amount: 50,
-    is_debit: false,
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "points",
-    business_id: "biz_1",
-    icon: "⭐",
-    icon_color: "#F6B43C",
-    user_id: "user_1",
-  },
-  {
-    id: "txn_4",
-    title: "Tech Repair Hub",
-    subtitle: "Screen replacement",
-    amount: -89.99,
-    is_debit: true,
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "purchase",
-    business_id: "biz_3",
-    icon: "📱",
-    icon_color: "#6366F1",
-    user_id: "user_3",
-  },
-  {
-    id: "txn_5",
-    title: "Sunrise Bakery",
-    subtitle: "Morning pastries",
-    amount: -18.75,
-    is_debit: true,
-    date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "purchase",
-    business_id: "biz_4",
-    icon: "🥐",
-    icon_color: "#F59E0B",
-    user_id: "user_2",
-  },
-  {
-    id: "txn_6",
-    title: "Top-up",
-    subtitle: "Wallet credit",
-    amount: 100.0,
-    is_debit: false,
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "topup",
-    business_id: null,
-    icon: "💳",
-    icon_color: "#00B488",
-    user_id: "user_1",
-  },
-  {
-    id: "txn_7",
-    title: "FitZone Gym",
-    subtitle: "Monthly membership",
-    amount: -49.99,
-    is_debit: true,
-    date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    type: "purchase",
-    business_id: "biz_5",
-    icon: "💪",
-    icon_color: "#EF4444",
-    user_id: "user_4",
-  },
-];
+export type Business = {
+  id: string;
+  name: string;
+  category: string;
+  icon: string;
+  color: string;
+  distance: string;
+  offer?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  logo_url?: string | null;
+};
 
-export const MOCK_PROFILES = [
-  {
-    id: "user_1",
-    name: "Alex Johnson",
-    handle: "@alexj",
-    balance: 245.5,
-    points: 1200,
-    is_dark: true,
-    created_at: "2024-01-15T10:00:00Z",
-  },
-  {
-    id: "user_2",
-    name: "Maria Garcia",
-    handle: "@mariag",
-    balance: 89.25,
-    points: 450,
-    is_dark: false,
-    created_at: "2024-02-20T14:30:00Z",
-  },
-  {
-    id: "user_3",
-    name: "Sam Chen",
-    handle: "@samchen",
-    balance: 312.0,
-    points: 2100,
-    is_dark: true,
-    created_at: "2024-01-08T09:15:00Z",
-  },
-  {
-    id: "user_4",
-    name: "Taylor Brown",
-    handle: "@taylorb",
-    balance: 56.75,
-    points: 320,
-    is_dark: false,
-    created_at: "2024-03-01T16:45:00Z",
-  },
-];
+export type Profile = {
+  id: string;
+  name: string;
+  handle?: string | null;
+  balance: number;
+  points: number;
+  is_dark: boolean;
+  created_at?: string;
+};
 
-export function generateRevenueData(days: number = 7) {
+export function buildRevenueData(transactions: Transaction[], days = 7) {
   const data = [];
+
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
+    date.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const dayTxns = transactions.filter((t) => {
+      const txnDate = new Date(t.date);
+      return txnDate >= date && txnDate < nextDay;
+    });
+
     data.push({
       date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      revenue: Math.floor(Math.random() * 5000 + 1000),
-      transactions: Math.floor(Math.random() * 50 + 10),
+      revenue: dayTxns
+        .filter((t) => t.is_debit)
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0),
+      transactions: dayTxns.length,
     });
   }
+
   return data;
+}
+
+export function buildPaymentQrPayload(
+  businessId: string,
+  amount?: number | null
+): string {
+  const params = new URLSearchParams({ business: businessId });
+  if (amount != null && amount > 0) {
+    params.set("amount", amount.toFixed(2));
+  }
+  return `quby://pay?${params.toString()}`;
+}
+
+export function paymentQrImageUrl(payload: string, size = 220): string {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(payload)}`;
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/q_icon.dart';
+import '../widgets/safe_layout.dart';
 import '../flows/pay_flow.dart';
 import '../flows/topup_flow.dart';
 import '../flows/send_flow.dart';
@@ -24,6 +27,7 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const PayFlow(),
     );
@@ -33,6 +37,7 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const TopUpFlow(),
     );
@@ -42,6 +47,7 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const SendFlow(),
     );
@@ -51,15 +57,21 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? QubyColors.bgDark : QubyColors.bgLight;
-    final bottomPad = MediaQuery.of(context).padding.bottom;
+    final navHeight = QubyLayout.bottomNavHeight(context);
 
     final screens = [
       HomeScreen(
         onPayTap: _showPay,
         onTopUpTap: _showTopUp,
         onSendTap: _showSend,
+        onSplitTap: () => setState(() => _tab = 2),
+        onExploreTap: () {
+          setState(() => _tab = 1);
+          context.read<AppState>().refreshBusinesses();
+        },
+        onActivityTap: () => setState(() => _tab = 3),
       ),
-      const DiscoverScreen(),
+      DiscoverScreen(isActive: _tab == 1),
       const GroupsListScreen(),
       const ActivityScreen(),
     ];
@@ -70,7 +82,10 @@ class _MainShellState extends State<MainShell> {
         children: [
           SafeArea(
             bottom: false,
-            child: IndexedStack(index: _tab, children: screens),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: navHeight),
+              child: IndexedStack(index: _tab, children: screens),
+            ),
           ),
           Positioned(
             left: 0,
@@ -79,8 +94,12 @@ class _MainShellState extends State<MainShell> {
             child: _BottomBar(
               currentIndex: _tab,
               isDark: isDark,
-              bottomPad: bottomPad,
-              onTabTap: (i) => setState(() => _tab = i),
+              onTabTap: (i) {
+                setState(() => _tab = i);
+                if (i == 1) {
+                  context.read<AppState>().refreshBusinesses();
+                }
+              },
               onScanTap: _showPay,
             ),
           ),
@@ -93,14 +112,12 @@ class _MainShellState extends State<MainShell> {
 class _BottomBar extends StatelessWidget {
   final int currentIndex;
   final bool isDark;
-  final double bottomPad;
   final void Function(int) onTabTap;
   final VoidCallback onScanTap;
 
   const _BottomBar({
     required this.currentIndex,
     required this.isDark,
-    required this.bottomPad,
     required this.onTabTap,
     required this.onScanTap,
   });
@@ -108,16 +125,19 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
-    final accent = isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
-    final inactive = isDark ? QubyColors.textFaintDark : QubyColors.textFaintLight;
+    final accent =
+        isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
+    final inactive =
+        isDark ? QubyColors.textFaintDark : QubyColors.textFaintLight;
     final border = isDark ? QubyColors.lineDark : QubyColors.lineLight;
+    final bottomInset = QubyLayout.bottomInset(context);
 
     const labels = ['Home', 'Explore', '', 'Splits', 'Activity'];
     const icons = ['home', 'pin', 'scan', 'users', 'activity'];
 
     return Container(
       padding: EdgeInsets.only(
-        bottom: bottomPad + 6,
+        bottom: bottomInset + 6,
         top: 8,
         left: 8,
         right: 8,
@@ -128,7 +148,7 @@ class _BottomBar extends StatelessWidget {
         border: Border(top: BorderSide(color: border, width: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.07),
+            color: Colors.black.withValues(alpha: 0.07),
             blurRadius: 24,
             offset: const Offset(0, -4),
           ),
@@ -149,7 +169,7 @@ class _BottomBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: accent.withOpacity(0.4),
+                          color: accent.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),

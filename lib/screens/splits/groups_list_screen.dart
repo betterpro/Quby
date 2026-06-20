@@ -6,6 +6,7 @@ import '../../state/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/common.dart';
 import '../../widgets/q_icon.dart';
+import '../../widgets/safe_layout.dart';
 import 'group_detail_screen.dart';
 
 class GroupsListScreen extends StatelessWidget {
@@ -31,15 +32,15 @@ class GroupsListScreen extends StatelessWidget {
     final dimColor = isDark ? QubyColors.textDimDark : QubyColors.textDimLight;
     final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
     final border = isDark ? QubyColors.lineDark : QubyColors.lineLight;
-    final accent = isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
+    final accent =
+        isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
 
     return Consumer<AppState>(
       builder: (context, state, _) {
-        final totalBalance = state.groups.fold<double>(
-          0.0, (s, g) => s + g.myBalance);
+        final totalBalance =
+            state.groups.fold<double>(0.0, (s, g) => s + g.myBalance);
         final isPositive = totalBalance >= 0;
-        final balanceColor =
-            isPositive ? accent : QubyColors.danger;
+        final balanceColor = isPositive ? accent : QubyColors.danger;
 
         return CustomScrollView(
           slivers: [
@@ -95,9 +96,8 @@ class GroupsListScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: _buildBalanceHero(
-                    context, totalBalance, isPositive, balanceColor,
-                    textColor, dimColor, isDark, state),
+                child: _buildBalanceHero(context, totalBalance, isPositive,
+                    balanceColor, textColor, dimColor, isDark, state),
               ),
             ),
             SliverToBoxAdapter(
@@ -121,6 +121,7 @@ class GroupsListScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                     child: _GroupCard(
                       group: group,
+                      me: state.me,
                       isDark: isDark,
                       textColor: textColor,
                       dimColor: dimColor,
@@ -134,9 +135,7 @@ class GroupsListScreen extends StatelessWidget {
                 childCount: state.groups.length,
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: 80 + MediaQuery.of(context).padding.bottom),
-            ),
+            const SliverToBoxAdapter(child: TabScrollSpacer()),
           ],
         );
       },
@@ -193,12 +192,11 @@ class GroupsListScreen extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: balanceColor.withOpacity(0.12),
+                  color: balanceColor.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: qIcon(
-                      isPositive ? 'up' : 'down', 24, balanceColor),
+                  child: qIcon(isPositive ? 'up' : 'down', 24, balanceColor),
                 ),
               ),
             ],
@@ -211,14 +209,13 @@ class GroupsListScreen extends StatelessWidget {
                   label: 'You are owed',
                   value:
                       '\$${state.groups.fold<double>(0, (s, g) => s + (g.myBalance > 0 ? g.myBalance : 0)).toStringAsFixed(2)}',
-                  color: isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight,
+                  color: isDark
+                      ? QubyColors.accentGreenDark
+                      : QubyColors.accentGreenLight,
                   dimColor: dimColor,
                 ),
               ),
-              Container(
-                  width: 1,
-                  height: 32,
-                  color: border),
+              Container(width: 1, height: 32, color: border),
               Expanded(
                 child: _miniStat(
                   label: 'You owe',
@@ -263,13 +260,15 @@ class GroupsListScreen extends StatelessWidget {
   }
 
   void _showCreateGroup(BuildContext context, AppState state) {
+    final messenger = ScaffoldMessenger.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ChangeNotifierProvider.value(
         value: state,
-        child: const _CreateGroupSheet(),
+        child: _CreateGroupSheet(scaffoldMessenger: messenger),
       ),
     );
   }
@@ -277,6 +276,7 @@ class GroupsListScreen extends StatelessWidget {
 
 class _GroupCard extends StatelessWidget {
   final Group group;
+  final Contact me;
   final bool isDark;
   final Color textColor;
   final Color dimColor;
@@ -287,6 +287,7 @@ class _GroupCard extends StatelessWidget {
 
   const _GroupCard({
     required this.group,
+    required this.me,
     required this.isDark,
     required this.textColor,
     required this.dimColor,
@@ -295,6 +296,12 @@ class _GroupCard extends StatelessWidget {
     required this.accent,
     required this.onTap,
   });
+
+  Contact _displayContact(Contact contact) =>
+      contact.id == me.id ? me : contact;
+
+  String _firstName(Contact contact) =>
+      _displayContact(contact).name.split(' ').first;
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +325,7 @@ class _GroupCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: group.color.withOpacity(0.15),
+                    color: group.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
@@ -378,18 +385,24 @@ class _GroupCard extends StatelessWidget {
               Row(
                 children: [
                   MemberStack(
-                    members: group.members.map((m) => m.contact).toList(),
+                    members: group.members
+                        .map((m) => _displayContact(m.contact))
+                        .toList(),
                     avatarSize: 24,
                     overlap: 8,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    group.members.map((m) => m.contact.name.split(' ').first).join(', '),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      color: dimColor,
+                  Expanded(
+                    child: Text(
+                      group.members
+                          .map((m) => _firstName(m.contact))
+                          .join(', '),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: dimColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -402,7 +415,9 @@ class _GroupCard extends StatelessWidget {
 }
 
 class _CreateGroupSheet extends StatefulWidget {
-  const _CreateGroupSheet();
+  final ScaffoldMessengerState scaffoldMessenger;
+
+  const _CreateGroupSheet({required this.scaffoldMessenger});
 
   @override
   State<_CreateGroupSheet> createState() => _CreateGroupSheetState();
@@ -420,6 +435,7 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
     const Color(0xFFD8743C),
   ];
   Color _color = const Color(0xFF5B6CE0);
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -433,136 +449,176 @@ class _CreateGroupSheetState extends State<_CreateGroupSheet> {
     final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
     final textColor = isDark ? QubyColors.textDark : QubyColors.textLight;
     final dimColor = isDark ? QubyColors.textDimDark : QubyColors.textDimLight;
-    final surface2 = isDark ? QubyColors.surface2Dark : QubyColors.surface2Light;
+    final surface2 =
+        isDark ? QubyColors.surface2Dark : QubyColors.surface2Light;
     final border = isDark ? QubyColors.lineDark : QubyColors.lineLight;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-          24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'New Group',
-            style: GoogleFonts.spaceGrotesk(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _nameCtrl,
-            style: GoogleFonts.plusJakartaSans(fontSize: 15, color: textColor),
-            decoration: InputDecoration(
-              hintText: 'Group name',
-              filled: true,
-              fillColor: surface2,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Pick an emoji',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13,
-              color: dimColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: _emojiOptions.map((e) {
-              return GestureDetector(
-                onTap: () => setState(() => _emoji = e),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: _emoji == e
-                        ? _color.withOpacity(0.15)
-                        : surface2,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: _emoji == e ? _color : border,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(e, style: const TextStyle(fontSize: 20)),
+                    color: border,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Color',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13,
-              color: dimColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: _colorOptions.map((c) {
-              final selected = _color == c;
-              return GestureDetector(
-                onTap: () => setState(() => _color = c),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: selected ? Colors.white : Colors.transparent,
-                      width: 2,
-                    ),
-                    boxShadow: selected
-                        ? [BoxShadow(color: c.withOpacity(0.5), blurRadius: 8)]
-                        : null,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'New Group',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _nameCtrl,
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                style:
+                    GoogleFonts.plusJakartaSans(fontSize: 15, color: textColor),
+                decoration: InputDecoration(
+                  hintText: 'Group name',
+                  filled: true,
+                  fillColor: surface2,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-              );
-            }).toList(),
+                onSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pick an emoji',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: dimColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: _emojiOptions.map((e) {
+                  return GestureDetector(
+                    onTap: () => setState(() => _emoji = e),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _emoji == e
+                            ? _color.withValues(alpha: 0.15)
+                            : surface2,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _emoji == e ? _color : border,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(e, style: const TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Color',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: dimColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: _colorOptions.map((c) {
+                  final selected = _color == c;
+                  return GestureDetector(
+                    onTap: () => setState(() => _color = c),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: c,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: selected ? Colors.white : Colors.transparent,
+                          width: 2,
+                        ),
+                        boxShadow: selected
+                            ? [
+                                BoxShadow(
+                                  color: c.withValues(alpha: 0.5),
+                                  blurRadius: 8,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              QubyBtn(
+                label: 'Create Group',
+                loading: _saving,
+                onTap: _submit,
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          QubyBtn(
-            label: 'Create Group',
-            onTap: () {
-              if (_nameCtrl.text.isNotEmpty) {
-                Provider.of<AppState>(context, listen: false).createGroup(
-                  name: _nameCtrl.text,
-                  members: [],
-                  color: _color,
-                  emoji: _emoji,
-                );
-                Navigator.pop(context);
-              }
-            },
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _submit() async {
+    final name = _nameCtrl.text.trim();
+    if (_saving) return;
+
+    if (name.isEmpty) {
+      widget.scaffoldMessenger.showSnackBar(
+        const SnackBar(content: Text('Enter a group name')),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+
+    final error =
+        await Provider.of<AppState>(context, listen: false).createGroup(
+      name: name,
+      members: [],
+      color: _color,
+      emoji: _emoji,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _saving = false);
+
+    if (error != null) {
+      widget.scaffoldMessenger.showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+
+    Navigator.of(context).pop();
   }
 }

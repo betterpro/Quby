@@ -33,6 +33,7 @@ migrate_working_dir/
 
 # Local secrets — never commit
 dart-defines.json
+ios/Flutter/MapsKeys.xcconfig
 
 # Symbolication related
 app.*.symbols

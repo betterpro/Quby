@@ -3,12 +3,39 @@
 @tailwind utilities;
 
 :root {
+  /* Brand fonts */
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-plus-jakarta);
+  --font-mono: var(--font-jetbrains-mono);
+
+  /* Ink + paper neutrals */
+  --color-brand-ink: #0E1726;
+  --color-brand-paper: #F1F3EF;
+  --color-brand-surface: #FFFFFF;
+  --color-brand-surface-2: #F4F6F2;
+  --color-brand-surface-3: #E9ECE6;
+  --color-brand-slate: #5C6672;
+  --color-brand-mist: #9AA4AF;
+
+  /* Quby Green */
   --color-brand-green: #00B488;
-  --color-brand-green-light: #00D193;
-  --color-brand-dark-bg: #0A1F15;
-  --color-brand-dark-bg2: #0D2B1C;
-  --color-brand-honey: #F6B43C;
-  --color-brand-sidebar: #091A11;
+  --color-brand-green-600: #00997A;
+  --color-brand-green-ink: #067A5C;
+  --color-brand-green-bright: #00D193;
+  --color-brand-on-green: #04261C;
+  --color-brand-green-soft: rgba(0, 180, 136, 0.13);
+
+  /* Supporting */
+  --color-brand-honey: #E2911F;
+  --color-brand-danger: #E5484D;
+
+  /* Dark surfaces */
+  --color-brand-ink-bg: #0A0F1A;
+  --color-brand-ink-surface: #121A28;
+  --color-brand-ink-surface-2: #1A2333;
+  --color-brand-ink-text: #EAF0F6;
+  --color-brand-ink-dim: #93A1B3;
+  --color-brand-ink-line: rgba(255, 255, 255, 0.10);
 }
 
 * {
@@ -18,30 +45,28 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #0A1F15;
-  color: white;
+  background-color: var(--color-brand-ink-bg);
+  color: var(--color-brand-ink-text);
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0D2B1C;
+  background: var(--color-brand-ink-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E4030;
+  background: var(--color-brand-ink-surface-2);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00B488;
+  background: var(--color-brand-green);
 }
 
-/* Custom animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -51,15 +76,20 @@ html, body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Table row hover */
 .table-row-hover:hover {
   background-color: rgba(0, 180, 136, 0.05);
 }
 
-/* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #00D193, #00B488);
+  background: linear-gradient(135deg, var(--color-brand-green-bright), var(--color-brand-green));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.wordmark {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }

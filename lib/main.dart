@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:provider/provider.dart';
 import 'services/supabase_service.dart';
+import 'services/stripe_service.dart';
 import 'state/app_state.dart';
 import 'theme/app_theme.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_shell.dart';
 
+Future<void> _configureGoogleMaps() async {
+  final platform = GoogleMapsFlutterPlatform.instance;
+  if (platform is GoogleMapsFlutterAndroid) {
+    platform.useAndroidViewSurface = true;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await _configureGoogleMaps();
   try {
     await SupabaseService.initialize();
+    await StripeService.initialize();
   } catch (_) {
     // App works offline with seed data if Supabase is unreachable
   }
-
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppState(),
@@ -52,11 +63,9 @@ class _StartupRouterState extends State<_StartupRouter> {
   @override
   void initState() {
     super.initState();
-    if (SupabaseService.isSignedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<AppState>().initialize();
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppState>().initialize();
+    });
   }
 
   @override

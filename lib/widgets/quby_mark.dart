@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../theme/app_colors.dart';
+
+enum QubyMarkVariant {
+  /// Green top + ink sides — for light/paper backgrounds.
+  light,
+
+  /// Bright green top + light sides — for dark/ink backgrounds.
+  dark,
+}
 
 class QubyMark extends StatelessWidget {
   final double size;
-  final Color accentColor;
-  final Color inkColor;
+  final QubyMarkVariant variant;
 
   const QubyMark({
     super.key,
     this.size = 32,
-    this.accentColor = const Color(0xFF00B488),
-    this.inkColor = const Color(0xFF067A5C),
+    this.variant = QubyMarkVariant.light,
   });
 
   String _hex(Color c) {
@@ -22,17 +29,18 @@ class QubyMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _hex(accentColor);
-    final ink = _hex(inkColor);
+    final isDark = variant == QubyMarkVariant.dark;
+    final top =
+        isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
+    final side = isDark ? QubyColors.markFaceLight : QubyColors.textLight;
+    final topHex = _hex(top);
+    final sideHex = _hex(side);
 
-    final svg = '''<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Top face (accent color) -->
-  <polygon points="16,3.2 27.4,9.4 16,15.6 4.6,9.4" fill="$accent"/>
-  <!-- Left face (ink color) -->
-  <polygon points="4.6,9.4 16,15.6 16,28.8 4.6,22.6" fill="$ink"/>
-  <!-- Right face (ink 78% opacity) -->
-  <polygon points="27.4,9.4 16,15.6 16,28.8 27.4,22.6" fill="$ink" opacity="0.78"/>
-  <!-- Notch highlight (white 16%) -->
+    final svg =
+        '''<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="16,3.2 27.4,9.4 16,15.6 4.6,9.4" fill="$topHex"/>
+  <polygon points="4.6,9.4 16,15.6 16,28.8 4.6,22.6" fill="$sideHex"/>
+  <polygon points="27.4,9.4 16,15.6 16,28.8 27.4,22.6" fill="$sideHex" opacity="0.78"/>
   <polygon points="16,15.6 27.4,9.4 24.2,7.7 16,12.2 7.8,7.7 4.6,9.4" fill="white" opacity="0.16"/>
 </svg>''';
 

@@ -4,9 +4,9 @@ import { ArrowRight, Zap, Heart, BarChart3, Shield, Globe, Star } from "lucide-r
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0A1F15] text-white">
+    <div className="min-h-screen bg-brand-ink-bg text-white">
       {/* Nav */}
-      <nav className="border-b border-[#1A3828] bg-[#091A11]/80 backdrop-blur-md sticky top-0 z-50">
+      <nav className="border-b border-brand-ink-line bg-brand-ink-bg/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" />
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
@@ -21,12 +21,12 @@ export default function LandingPage() {
             >
               Business Login
             </Link>
-            <a
-              href="mailto:hello@qubypay.com"
-              className="text-sm bg-[#00B488] hover:bg-[#00D193] text-white px-4 py-2 rounded-lg transition-colors font-medium"
+            <Link
+              href="/signup"
+              className="text-sm bg-brand-green hover:bg-brand-green-bright text-brand-on-green px-4 py-2 rounded-lg transition-colors font-medium"
             >
-              Get Started
-            </a>
+              Sign Up
+            </Link>
           </div>
         </div>
       </nav>
@@ -35,18 +35,18 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-24 pb-32 px-6">
         {/* Background glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[#00B488]/5 blur-[120px]" />
-          <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full bg-[#F6B43C]/3 blur-[80px]" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-brand-green/5 blur-[120px]" />
+          <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full bg-brand-honey/3 blur-[80px]" />
         </div>
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#00B488]/10 border border-[#00B488]/30 rounded-full px-4 py-1.5 mb-8 text-sm text-[#00D193]">
+          <div className="inline-flex items-center gap-2 bg-brand-green/10 border border-brand-green/30 rounded-full px-4 py-1.5 mb-8 text-sm text-brand-green-bright">
             <Zap size={14} />
             <span>Powering 500+ local businesses</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold font-grotesk mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-bold font-display mb-6 leading-tight">
             The Smart Payment Platform
             <br />
             <span className="gradient-text">for Local Business</span>
@@ -60,17 +60,17 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/login"
-              className="flex items-center gap-2 bg-[#00B488] hover:bg-[#00D193] text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-[0_0_30px_rgba(0,180,136,0.3)]"
+              className="flex items-center gap-2 bg-brand-green hover:bg-brand-green-bright text-brand-on-green px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-[0_0_30px_rgba(0,180,136,0.3)]"
             >
               Business Login
               <ArrowRight size={20} />
             </Link>
-            <a
-              href="mailto:hello@qubypay.com?subject=Get Started with QubyPay"
-              className="flex items-center gap-2 border border-[#1A3828] hover:border-[#00B488]/40 text-gray-300 hover:text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all"
+            <Link
+              href="/signup"
+              className="flex items-center gap-2 border border-brand-ink-line hover:border-brand-green/40 text-gray-300 hover:text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all"
             >
-              Get Started Free
-            </a>
+              Sign Up Free
+            </Link>
           </div>
 
           {/* Stats row */}
@@ -81,8 +81,8 @@ export default function LandingPage() {
               { value: "500+", label: "Businesses" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-white font-grotesk">{stat.value}</p>
-                <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+                <p className="text-2xl font-bold text-brand-ink-text font-mono">{stat.value}</p>
+                <p className="text-sm text-brand-ink-dim mt-1">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -90,10 +90,10 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24 px-6 bg-[#0D2B1C]/40">
+      <section id="features" className="py-24 px-6 bg-brand-ink-surface-2/40">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-grotesk mb-4">
+            <h2 className="text-4xl font-bold font-display mb-4">
               Everything you need to grow
             </h2>
             <p className="text-gray-400 text-lg max-w-xl mx-auto">
@@ -113,7 +113,7 @@ export default function LandingPage() {
               },
               {
                 icon: Heart,
-                color: "#F6B43C",
+                color: "#E2911F",
                 title: "Build Loyalty",
                 description:
                   "Create custom loyalty programs that keep customers coming back. Points, rewards, and exclusive offers tailored to your business.",
@@ -130,7 +130,7 @@ export default function LandingPage() {
             ].map((feature) => (
               <div
                 key={feature.title}
-                className="bg-[#0F2518] border border-[#1E4030] rounded-2xl p-8 hover:border-[#00B488]/30 transition-all group"
+                className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-2xl p-8 hover:border-brand-green/30 transition-all group"
               >
                 <div
                   className="w-14 h-14 rounded-xl flex items-center justify-center mb-6"
@@ -138,14 +138,14 @@ export default function LandingPage() {
                 >
                   <feature.icon size={28} style={{ color: feature.color }} />
                 </div>
-                <h3 className="text-xl font-semibold font-grotesk mb-3 text-white">
+                <h3 className="text-xl font-semibold font-display mb-3 text-white">
                   {feature.title}
                 </h3>
                 <p className="text-gray-400 leading-relaxed mb-6">{feature.description}</p>
                 <ul className="space-y-2">
                   {feature.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#00B488]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-green" />
                       {f}
                     </li>
                   ))}
@@ -161,7 +161,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-bold font-grotesk mb-6">
+              <h2 className="text-4xl font-bold font-display mb-6">
                 Trusted by local businesses{" "}
                 <span className="gradient-text">everywhere</span>
               </h2>
@@ -194,12 +194,12 @@ export default function LandingPage() {
               ].map((biz) => (
                 <div
                   key={biz.name}
-                  className="bg-[#0F2518] border border-[#1E4030] rounded-xl p-4"
+                  className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-4"
                 >
                   <div className="text-2xl mb-3">{biz.icon}</div>
-                  <p className="font-semibold text-white text-sm font-grotesk">{biz.name}</p>
+                  <p className="font-semibold text-white text-sm font-display">{biz.name}</p>
                   <p className="text-xs text-gray-500 mb-2">{biz.category}</p>
-                  <p className="text-xs text-[#00D193]">{biz.revenue}</p>
+                  <p className="text-xs text-brand-green-bright">{biz.revenue}</p>
                 </div>
               ))}
             </div>
@@ -208,9 +208,9 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-6 bg-gradient-to-b from-[#0D2B1C]/40 to-[#0A1F15]">
+      <section className="py-24 px-6 bg-gradient-to-b from-brand-ink-surface-2/40 to-brand-ink-bg">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-grotesk mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold font-display mb-6">
             Ready to grow your business?
           </h2>
           <p className="text-gray-400 text-lg mb-10">
@@ -218,13 +218,13 @@ export default function LandingPage() {
             reward customers, and grow their revenue.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="mailto:hello@qubypay.com?subject=Get Started with QubyPay"
-              className="flex items-center gap-2 bg-[#00B488] hover:bg-[#00D193] text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-[0_0_30px_rgba(0,180,136,0.3)]"
+            <Link
+              href="/signup"
+              className="flex items-center gap-2 bg-brand-green hover:bg-brand-green-bright text-brand-on-green px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-[0_0_30px_rgba(0,180,136,0.3)]"
             >
-              Get Started Free
+              Sign Up Free
               <ArrowRight size={20} />
-            </a>
+            </Link>
             <Link
               href="/login"
               className="text-gray-300 hover:text-white transition-colors px-8 py-4 text-lg"
@@ -236,7 +236,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#1A3828] py-12 px-6">
+      <footer className="border-t border-brand-ink-line py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Logo size="sm" />
           <div className="flex items-center gap-8 text-sm text-gray-500">

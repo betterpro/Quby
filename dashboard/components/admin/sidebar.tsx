@@ -33,13 +33,13 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-[#091A11] border-r border-[#1A3828] flex flex-col fixed left-0 top-0 bottom-0 z-40">
+    <aside className="w-64 min-h-screen bg-brand-ink-bg border-r border-brand-ink-line flex flex-col fixed left-0 top-0 bottom-0 z-40">
       {/* Logo */}
-      <div className="p-6 border-b border-[#1A3828]">
+      <div className="p-6 border-b border-brand-ink-line">
         <Logo size="sm" />
         <div className="flex items-center gap-1.5 mt-2">
-          <Shield size={10} className="text-[#F6B43C]" />
-          <p className="text-xs text-[#F6B43C]">Admin Dashboard</p>
+          <Shield size={10} className="text-brand-honey" />
+          <p className="text-xs text-brand-honey">Admin Dashboard</p>
         </div>
       </div>
 
@@ -57,8 +57,8 @@ export function AdminSidebar() {
               href={item.href}
               className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-[#F6B43C]/10 text-[#F6B43C] border border-[#F6B43C]/20"
-                  : "text-gray-400 hover:text-white hover:bg-[#0F2518]"
+                  ? "bg-brand-honey/10 text-brand-honey border border-[#E2911F]/20"
+                  : "text-gray-400 hover:text-white hover:bg-brand-ink-surface"
               }`}
             >
               <span className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export function AdminSidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="p-4 border-t border-[#1A3828] space-y-1">
+      <div className="p-4 border-t border-brand-ink-line space-y-1">
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all"

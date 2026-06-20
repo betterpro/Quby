@@ -6,7 +6,7 @@ Color colorFromHex(String hex) =>
     Color(int.parse(hex.replaceFirst('#', '0xFF')));
 
 String colorToHex(Color c) =>
-    '#${c.value.toRadixString(16).substring(2).toUpperCase()}';
+    '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
 // ── Business ──────────────────────────────────────────────────────────────────
 
@@ -19,6 +19,9 @@ class Business {
   final String dist;
   final String? offer;
   final String? addr;
+  final double? lat;
+  final double? lng;
+  final String? logoUrl;
 
   const Business({
     required this.id,
@@ -29,17 +32,25 @@ class Business {
     required this.dist,
     this.offer,
     this.addr,
+    this.lat,
+    this.lng,
+    this.logoUrl,
   });
+
+  bool get hasLocation => lat != null && lng != null;
 
   factory Business.fromJson(Map<String, dynamic> j) => Business(
         id: j['id'] as String,
         name: j['name'] as String,
-        cat: j['category'] as String,
-        icon: j['icon'] as String,
-        color: colorFromHex(j['color'] as String),
-        dist: j['distance'] as String,
+        cat: j['category'] as String? ?? 'Services',
+        icon: j['icon'] as String? ?? 'store',
+        color: colorFromHex(j['color'] as String? ?? '#00B488'),
+        dist: j['distance'] as String? ?? '—',
         offer: j['offer'] as String?,
         addr: j['address'] as String?,
+        lat: (j['latitude'] as num?)?.toDouble(),
+        lng: (j['longitude'] as num?)?.toDouble(),
+        logoUrl: j['logo_url'] as String?,
       );
 }
 
@@ -63,7 +74,65 @@ class Contact {
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  factory Contact.fromJson(Map<String, dynamic> j) => Contact(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        handle: (j['handle'] as String?) ?? '',
+        color: colorFromHex((j['color'] as String?) ?? '#5B6CE0'),
+      );
+
+  Map<String, dynamic> toJson(String ownerId) => {
+        'owner_id': ownerId,
+        'name': name,
+        'handle': handle.isEmpty ? null : handle,
+        'color': colorToHex(color),
+      };
+
+  Contact copyWith({String? id, String? name, String? handle, Color? color}) =>
+      Contact(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        handle: handle ?? this.handle,
+        color: color ?? this.color,
+      );
+}
+
+class UserSearchResult {
+  final String id;
+  final String name;
+  final String handle;
+  final Color color;
+
+  const UserSearchResult({
+    required this.id,
+    required this.name,
+    required this.handle,
+    required this.color,
+  });
+
+  factory UserSearchResult.fromJson(Map<String, dynamic> j) => UserSearchResult(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        handle: (j['handle'] as String?) ?? '',
+        color: colorFromHex((j['avatar_color'] as String?) ?? '#5B6CE0'),
+      );
+
+  Contact toContact() => Contact(
+        id: '',
+        name: name,
+        handle: handle,
+        color: color,
+      );
+
+  String get initials {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 }
 
@@ -146,21 +215,46 @@ class Expense {
   final String title;
   final double amount;
   final Contact paidBy;
+  final Contact createdBy;
   final List<Contact> splitWith;
   final DateTime date;
   final String? category;
+  final DateTime? editedAt;
 
   const Expense({
     required this.id,
     required this.title,
     required this.amount,
     required this.paidBy,
+    required this.createdBy,
     required this.splitWith,
     required this.date,
     this.category,
+    this.editedAt,
   });
 
+  bool get isEdited => editedAt != null;
+
   double get perPerson => amount / (splitWith.length + 1);
+
+  Expense copyWith({
+    String? title,
+    double? amount,
+    List<Contact>? splitWith,
+    String? category,
+    DateTime? editedAt,
+  }) =>
+      Expense(
+        id: id,
+        title: title ?? this.title,
+        amount: amount ?? this.amount,
+        paidBy: paidBy,
+        createdBy: createdBy,
+        splitWith: splitWith ?? this.splitWith,
+        date: date,
+        category: category ?? this.category,
+        editedAt: editedAt ?? this.editedAt,
+      );
 }
 
 class Group {
@@ -182,4 +276,67 @@ class Group {
 
   double get myBalance => members.fold(0.0, (sum, m) => sum + m.balance);
   double get totalSpend => expenses.fold(0.0, (sum, e) => sum + e.amount);
+
+  Group copyWith({
+    List<GroupMember>? members,
+    List<Expense>? expenses,
+  }) =>
+      Group(
+        id: id,
+        name: name,
+        members: members ?? this.members,
+        expenses: expenses ?? this.expenses,
+        color: color,
+        emoji: emoji,
+      );
+}
+
+// ── Rewards ───────────────────────────────────────────────────────────────────
+
+class Perk {
+  final String id;
+  final String? businessId;
+  final String title;
+  final String subtitle;
+  final int cost;
+  final String icon;
+  final Color color;
+
+  const Perk({
+    required this.id,
+    this.businessId,
+    required this.title,
+    required this.subtitle,
+    required this.cost,
+    required this.icon,
+    required this.color,
+  });
+
+  factory Perk.fromJson(Map<String, dynamic> j) => Perk(
+        id: j['id'] as String,
+        businessId: j['business_id'] as String?,
+        title: j['title'] as String,
+        subtitle: j['subtitle'] as String,
+        cost: j['cost_points'] as int,
+        icon: j['icon'] as String,
+        color: colorFromHex(j['color'] as String),
+      );
+}
+
+class StampCard {
+  final String businessId;
+  final String businessName;
+  final String businessIcon;
+  final Color businessColor;
+  final int stampCount;
+  final int goal;
+
+  const StampCard({
+    required this.businessId,
+    required this.businessName,
+    required this.businessIcon,
+    required this.businessColor,
+    required this.stampCount,
+    required this.goal,
+  });
 }

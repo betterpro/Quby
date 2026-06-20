@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/supabase_service.dart';
 import '../state/app_state.dart';
+import '../theme/app_colors.dart';
 import '../widgets/quby_mark.dart';
 import 'main_shell.dart';
 
@@ -83,19 +84,57 @@ class _AuthScreenState extends State<AuthScreen>
     try {
       if (_isSignIn) {
         await SupabaseService.signInWithEmail(email, password);
+        if (mounted) _navigateToApp();
       } else {
-        await SupabaseService.signUpWithEmail(email, password);
+        final needsConfirmation =
+            await SupabaseService.signUpWithEmail(email, password);
+        if (!mounted) return;
+        if (needsConfirmation) {
+          setState(() {
+            _loading = false;
+            _error = '';
+            _isSignIn = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Account created — check your email to confirm, then sign in.',
+                style: GoogleFonts.plusJakartaSans(fontSize: 14),
+              ),
+              backgroundColor: const Color(0xFF00D193),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          _navigateToApp();
+        }
       }
-      if (mounted) _navigateToApp();
     } catch (e) {
-      final msg = e.toString().replaceAll('Exception: ', '');
+      final msg = _authErrorMessage(e);
       setState(() {
         _loading = false;
-        _error = msg.contains('Invalid login') || msg.contains('invalid_grant')
-            ? 'Incorrect email or password'
-            : msg;
+        _error = msg;
       });
     }
+  }
+
+  String _authErrorMessage(Object error) {
+    final raw = error.toString().replaceAll('Exception: ', '');
+    if (raw.contains('Invalid login') || raw.contains('invalid_grant')) {
+      return 'Incorrect email or password';
+    }
+    if (raw.contains('User already registered')) {
+      return 'An account with this email already exists';
+    }
+    if (raw.contains('Invalid argument') || raw.contains('No host specified')) {
+      return 'App is not connected to Supabase. Ask your developer to '
+          'configure dart-defines.json.';
+    }
+    if (raw.contains('Supabase is not configured') ||
+        raw.contains('Could not connect to Supabase')) {
+      return raw;
+    }
+    return raw;
   }
 
   Future<void> _handleGoogle() async {
@@ -109,8 +148,9 @@ class _AuthScreenState extends State<AuthScreen>
     } catch (e) {
       setState(() {
         _loading = false;
-        if (!e.toString().contains('cancelled')) {
-          _error = 'Google sign-in failed. Please try again.';
+        final msg = SupabaseService.googleSignInErrorMessage(e);
+        if (msg != 'cancelled') {
+          _error = msg;
         }
       });
     }
@@ -137,161 +177,175 @@ class _AuthScreenState extends State<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.of(context).padding.bottom;
+    const bgColor = QubyColors.bgDark;
+    const gradient = BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [QubyColors.bgDark, QubyColors.surface2Dark],
+      ),
+    );
+
+    final minContentHeight = MediaQuery.sizeOf(context).height -
+        MediaQuery.paddingOf(context).top -
+        MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0A1F15), Color(0xFF0D2B1C)],
-          ),
-        ),
+      backgroundColor: bgColor,
+      resizeToAvoidBottomInset: true,
+      body: DecoratedBox(
+        decoration: gradient,
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnim,
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(24, 32, 24, bottomPad + 32),
-              child: Column(
-                children: [
-                  // Decorative circle behind logo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00D193).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF00D193).withOpacity(0.2),
-                        width: 1.5,
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minContentHeight),
+                child: Column(
+                  children: [
+                    // Decorative circle behind logo
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color:
+                            QubyColors.accentGreenDark.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color:
+                              QubyColors.accentGreenDark.withValues(alpha: 0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Center(
+                        child:
+                            QubyMark(size: 36, variant: QubyMarkVariant.dark),
                       ),
                     ),
-                    child: const Center(
-                      child: QubyMark(size: 36, accentColor: Color(0xFF00D193)),
+                    const SizedBox(height: 24),
+
+                    Text(
+                      _isSignIn ? 'Welcome back' : 'Create your account',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  Text(
-                    _isSignIn ? 'Welcome back' : 'Create your account',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    const SizedBox(height: 6),
+                    Text(
+                      _isSignIn
+                          ? 'Sign in to your Quby wallet'
+                          : 'Join Quby and start spending smarter',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.5),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _isSignIn
-                        ? 'Sign in to your Quby wallet'
-                        : 'Join Quby and start spending smarter',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.5),
+                    const SizedBox(height: 32),
+
+                    // Sign In / Sign Up tab toggle
+                    _TabToggle(
+                      isSignIn: _isSignIn,
+                      onToggle: (v) => setState(() {
+                        _isSignIn = v;
+                        _error = '';
+                      }),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                  // Sign In / Sign Up tab toggle
-                  _TabToggle(
-                    isSignIn: _isSignIn,
-                    onToggle: (v) => setState(() {
-                      _isSignIn = v;
-                      _error = '';
-                    }),
-                  ),
-                  const SizedBox(height: 24),
+                    // Error
+                    if (_error.isNotEmpty) ...[
+                      _ErrorBanner(message: _error),
+                      const SizedBox(height: 16),
+                    ],
 
-                  // Error
-                  if (_error.isNotEmpty) ...[
-                    _ErrorBanner(message: _error),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Email field
-                  _InputField(
-                    label: 'Email',
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    hint: 'you@example.com',
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Password field
-                  _PasswordField(
-                    label: 'Password',
-                    controller: _passCtrl,
-                    obscure: _obscure,
-                    onToggle: () => setState(() => _obscure = !_obscure),
-                  ),
-
-                  if (!_isSignIn) ...[
+                    // Email field
+                    _InputField(
+                      label: 'Email',
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      hint: 'you@example.com',
+                    ),
                     const SizedBox(height: 14),
+
+                    // Password field
                     _PasswordField(
-                      label: 'Confirm Password',
-                      controller: _confirmCtrl,
+                      label: 'Password',
+                      controller: _passCtrl,
                       obscure: _obscure,
                       onToggle: () => setState(() => _obscure = !_obscure),
                     ),
-                  ],
 
-                  const SizedBox(height: 22),
+                    if (!_isSignIn) ...[
+                      const SizedBox(height: 14),
+                      _PasswordField(
+                        label: 'Confirm Password',
+                        controller: _confirmCtrl,
+                        obscure: _obscure,
+                        onToggle: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ],
 
-                  // Primary action button
-                  _PrimaryButton(
-                    label: _isSignIn ? 'Sign In' : 'Create Account',
-                    loading: _loading,
-                    onTap: _handleEmail,
-                  ),
+                    const SizedBox(height: 22),
 
-                  const SizedBox(height: 28),
+                    // Primary action button
+                    _PrimaryButton(
+                      label: _isSignIn ? 'Sign In' : 'Create Account',
+                      loading: _loading,
+                      onTap: _handleEmail,
+                    ),
 
-                  // Divider
-                  Row(
-                    children: [
-                      Expanded(
-                          child: Divider(
-                              color: Colors.white.withOpacity(0.1),
-                              height: 1)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'or continue with',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.35),
+                    const SizedBox(height: 28),
+
+                    // Divider
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Divider(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                height: 1)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'or continue with',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.35),
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                          child: Divider(
-                              color: Colors.white.withOpacity(0.1),
-                              height: 1)),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Google button
-                  _SocialButton(
-                    onTap: _loading ? null : _handleGoogle,
-                    icon: const _GoogleG(),
-                    label: 'Continue with Google',
-                  ),
-
-                  // Apple button — iOS only
-                  if (Platform.isIOS) ...[
-                    const SizedBox(height: 12),
-                    _SocialButton(
-                      onTap: _loading ? null : _handleApple,
-                      icon: const Icon(Icons.apple,
-                          color: Colors.white, size: 20),
-                      label: 'Continue with Apple',
+                        Expanded(
+                            child: Divider(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                height: 1)),
+                      ],
                     ),
+
+                    const SizedBox(height: 20),
+
+                    // Google button
+                    _SocialButton(
+                      onTap: _loading ? null : _handleGoogle,
+                      icon: const _GoogleG(),
+                      label: 'Continue with Google',
+                    ),
+
+                    // Apple button — iOS only
+                    if (Platform.isIOS) ...[
+                      const SizedBox(height: 12),
+                      _SocialButton(
+                        onTap: _loading ? null : _handleApple,
+                        icon: const Icon(Icons.apple,
+                            color: Colors.white, size: 20),
+                        label: 'Continue with Apple',
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -313,7 +367,7 @@ class _TabToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(4),
@@ -347,11 +401,12 @@ class _Tab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: active
-                ? const Color(0xFF00D193).withOpacity(0.15)
+                ? const Color(0xFF00D193).withValues(alpha: 0.15)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
             border: active
-                ? Border.all(color: const Color(0xFF00D193).withOpacity(0.3))
+                ? Border.all(
+                    color: const Color(0xFF00D193).withValues(alpha: 0.3))
                 : null,
           ),
           child: Center(
@@ -362,7 +417,7 @@ class _Tab extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: active
                     ? const Color(0xFF00D193)
-                    : Colors.white.withOpacity(0.4),
+                    : Colors.white.withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -382,9 +437,9 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -465,7 +520,7 @@ class _PasswordField extends StatelessWidget {
               onPressed: onToggle,
               icon: Icon(
                 obscure ? Icons.visibility_off : Icons.visibility,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 18,
               ),
             ),
@@ -498,14 +553,14 @@ class _PrimaryButton extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               color: loading
-                  ? const Color(0xFF00D193).withOpacity(0.6)
+                  ? const Color(0xFF00D193).withValues(alpha: 0.6)
                   : const Color(0xFF00D193),
               borderRadius: BorderRadius.circular(16),
               boxShadow: loading
                   ? []
                   : [
                       BoxShadow(
-                        color: const Color(0xFF00D193).withOpacity(0.35),
+                        color: const Color(0xFF00D193).withValues(alpha: 0.35),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       )
@@ -517,14 +572,14 @@ class _PrimaryButton extends StatelessWidget {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Color(0xFF0A1F15)),
+                          strokeWidth: 2, color: QubyColors.accentGreenOnLight),
                     )
                   : Text(
                       label,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0A1F15),
+                        color: QubyColors.accentGreenOnLight,
                       ),
                     ),
             ),
@@ -555,9 +610,9 @@ class _SocialButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white.withOpacity(0.12)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               borderRadius: BorderRadius.circular(14),
-              color: Colors.white.withOpacity(0.04),
+              color: Colors.white.withValues(alpha: 0.04),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -602,26 +657,25 @@ class _GoogleG extends StatelessWidget {
 TextStyle get _labelStyle => GoogleFonts.plusJakartaSans(
       fontSize: 12,
       fontWeight: FontWeight.w600,
-      color: Colors.white.withOpacity(0.55),
+      color: Colors.white.withValues(alpha: 0.55),
     );
 
 InputDecoration _inputDecoration(String hint) => InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.06),
+      fillColor: Colors.white.withValues(alpha: 0.06),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       focusedBorder: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: Color(0xFF00D193), width: 1.5),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );

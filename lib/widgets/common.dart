@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/models.dart';
+import '../services/supabase_service.dart';
 import '../theme/app_colors.dart';
 import 'q_icon.dart';
 
@@ -56,36 +57,103 @@ class MemberStack extends StatelessWidget {
     this.overlap = 10,
   });
 
+  static const _borderWidth = 1.5;
+
   @override
   Widget build(BuildContext context) {
     final shown = members.take(4).toList();
-    final totalWidth =
-        avatarSize + (shown.length - 1) * (avatarSize - overlap);
+    if (shown.isEmpty) return const SizedBox.shrink();
+
+    final borderColor = Theme.of(context).scaffoldBackgroundColor;
+    final outerSize = avatarSize + _borderWidth * 2;
+    final totalWidth = outerSize + (shown.length - 1) * (avatarSize - overlap);
 
     return SizedBox(
       width: totalWidth,
-      height: avatarSize,
+      height: outerSize,
       child: Stack(
+        clipBehavior: Clip.none,
         children: shown.asMap().entries.map((e) {
           return Positioned(
             left: e.key * (avatarSize - overlap),
             child: Container(
+              width: outerSize,
+              height: outerSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  width: 1.5,
+                  color: borderColor,
+                  width: _borderWidth,
                 ),
               ),
-              child: Avatar(
-                initials: e.value.initials,
-                color: e.value.color,
-                size: avatarSize,
+              child: ClipOval(
+                child: Avatar(
+                  initials: e.value.initials,
+                  color: e.value.color,
+                  size: avatarSize,
+                ),
               ),
             ),
           );
         }).toList(),
       ),
+    );
+  }
+}
+
+// ── BusinessLogo ──────────────────────────────────────────────────────────────
+
+class BusinessLogo extends StatelessWidget {
+  final Business biz;
+  final double size;
+  final double iconSize;
+  final double borderRadius;
+  final Color? backgroundColor;
+  final Color? iconColor;
+
+  const BusinessLogo({
+    super.key,
+    required this.biz,
+    this.size = 40,
+    this.iconSize = 22,
+    this.borderRadius = 12,
+    this.backgroundColor,
+    this.iconColor,
+  });
+
+  bool get _hasLogo => biz.logoUrl != null && biz.logoUrl!.isNotEmpty;
+
+  String? get _imageUrl => SupabaseService.resolveBusinessLogoUrl(biz.logoUrl);
+
+  Map<String, String>? get _imageHeaders =>
+      _imageUrl != null && SupabaseService.isConfigured
+          ? SupabaseService.storageAuthHeaders
+          : null;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = backgroundColor ?? biz.color.withValues(alpha: 0.15);
+    final fallbackColor = iconColor ?? biz.color;
+    final imageUrl = _imageUrl;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: _hasLogo && imageUrl != null
+          ? Image.network(
+              imageUrl,
+              headers: _imageHeaders,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                child: qIcon(biz.icon, iconSize, fallbackColor),
+              ),
+            )
+          : Center(child: qIcon(biz.icon, iconSize, fallbackColor)),
     );
   }
 }
@@ -119,15 +187,7 @@ class BizBadge extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: biz.color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(child: qIcon(biz.icon, 22, biz.color)),
-            ),
+            BusinessLogo(biz: biz, size: 40, iconSize: 22),
             const SizedBox(height: 8),
             Text(
               biz.name,
@@ -150,10 +210,9 @@ class BizBadge extends StatelessWidget {
             if (biz.offer != null) ...[
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: biz.color.withOpacity(0.12),
+                  color: biz.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -189,10 +248,18 @@ class NumPad extends StatelessWidget {
     final dimColor = isDark ? QubyColors.textDimDark : QubyColors.textDimLight;
 
     final keys = [
-      '1', '2', '3',
-      '4', '5', '6',
-      '7', '8', '9',
-      '.', '0', '⌫',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '.',
+      '0',
+      '⌫',
     ];
 
     return GridView.count(
@@ -214,7 +281,7 @@ class NumPad extends StatelessWidget {
                   ? qIcon('back', 22, dimColor)
                   : Text(
                       k,
-                      style: GoogleFonts.spaceGrotesk(
+                      style: GoogleFonts.jetBrainsMono(
                         fontSize: 22,
                         fontWeight: FontWeight.w500,
                         color: textColor,
@@ -254,7 +321,7 @@ class AmountDisplay extends StatelessWidget {
           padding: EdgeInsets.only(top: fontSize * 0.15),
           child: Text(
             r'$',
-            style: GoogleFonts.spaceGrotesk(
+            style: GoogleFonts.jetBrainsMono(
               fontSize: fontSize * 0.5,
               fontWeight: FontWeight.w500,
               color: dimColor,
@@ -263,7 +330,7 @@ class AmountDisplay extends StatelessWidget {
         ),
         Text(
           amount.isEmpty ? '0' : amount,
-          style: GoogleFonts.spaceGrotesk(
+          style: GoogleFonts.jetBrainsMono(
             fontSize: fontSize,
             fontWeight: FontWeight.w600,
             color: textColor,
@@ -310,16 +377,59 @@ class SectionTitle extends StatelessWidget {
         if (action != null)
           GestureDetector(
             onTap: onAction,
-            child: Text(
-              action!,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: accent,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              child: Text(
+                action!,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: accent,
+                ),
               ),
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── FlowSheet ─────────────────────────────────────────────────────────────────
+
+/// Standard bottom-sheet chrome used by Pay, Send, and Top Up flows.
+class FlowSheet extends StatelessWidget {
+  final Widget child;
+
+  const FlowSheet({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? QubyColors.surfaceDark : QubyColors.surfaceLight;
+    final handle = isDark ? QubyColors.surface3Dark : QubyColors.surface3Light;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: handle,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -468,7 +578,8 @@ class TransactionTile extends StatelessWidget {
     final accent =
         isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
 
-    final iconColor = tx.iconColor ?? (isDark ? QubyColors.textDimDark : QubyColors.textDimLight);
+    final iconColor = tx.iconColor ??
+        (isDark ? QubyColors.textDimDark : QubyColors.textDimLight);
     final amountColor = tx.isDebit ? textColor : accent;
     final amountPrefix = tx.isDebit ? '-' : '+';
 
@@ -478,7 +589,7 @@ class TransactionTile extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
+            color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(13),
           ),
           child: Center(

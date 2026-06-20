@@ -1,0 +1,7 @@
+# Supabase local config — see https://supabase.com/docs/guides/cli/config
+
+[functions.create-payment-intent]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false

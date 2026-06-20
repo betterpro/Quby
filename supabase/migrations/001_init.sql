@@ -15,7 +15,19 @@ CREATE TABLE IF NOT EXISTS businesses (
 );
 
 ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "businesses_public_read" ON businesses FOR SELECT USING (true);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'businesses'
+      AND policyname = 'businesses_public_read'
+  ) THEN
+    CREATE POLICY "businesses_public_read" ON businesses FOR SELECT USING (true);
+  END IF;
+END
+$$;
 
 -- ── Profiles (one per auth user) ─────────────────────────────────────────────
 
@@ -31,9 +43,37 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "profiles_own_select" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "profiles_own_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "profiles_own_update" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'profiles'
+      AND policyname = 'profiles_own_select'
+  ) THEN
+    CREATE POLICY "profiles_own_select" ON profiles FOR SELECT USING (auth.uid() = id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'profiles'
+      AND policyname = 'profiles_own_insert'
+  ) THEN
+    CREATE POLICY "profiles_own_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'profiles'
+      AND policyname = 'profiles_own_update'
+  ) THEN
+    CREATE POLICY "profiles_own_update" ON profiles FOR UPDATE USING (auth.uid() = id);
+  END IF;
+END
+$$;
 
 -- ── Transactions ──────────────────────────────────────────────────────────────
 
@@ -53,8 +93,28 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "transactions_own_select" ON transactions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "transactions_own_insert" ON transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'transactions'
+      AND policyname = 'transactions_own_select'
+  ) THEN
+    CREATE POLICY "transactions_own_select" ON transactions FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'transactions'
+      AND policyname = 'transactions_own_insert'
+  ) THEN
+    CREATE POLICY "transactions_own_insert" ON transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+END
+$$;
 
 -- ── Auto-create profile on sign-up ───────────────────────────────────────────
 
@@ -68,7 +128,8 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 

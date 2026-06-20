@@ -25,7 +25,7 @@ interface RevenueChartProps {
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#0F2518] border border-[#1E4030] rounded-lg p-3 shadow-xl">
+      <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-lg p-3 shadow-xl">
         <p className="text-xs text-gray-400 mb-2">{label}</p>
         {payload.map((entry: any) => (
           <div key={entry.name} className="flex items-center gap-2 text-sm">
@@ -49,10 +49,10 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export function RevenueChart({ data }: RevenueChartProps) {
   return (
-    <div className="bg-[#0F2518] border border-[#1E4030] rounded-xl p-6">
+    <div className="bg-brand-ink-surface border border-brand-ink-surface-2 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-semibold text-white font-grotesk">Revenue Overview</h3>
+          <h3 className="font-semibold text-white font-display">Revenue Overview</h3>
           <p className="text-sm text-gray-400 mt-0.5">Last 7 days</p>
         </div>
         <div className="flex items-center gap-4 text-xs text-gray-400">
@@ -61,7 +61,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             Revenue
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 bg-[#F6B43C] rounded inline-block" />
+            <span className="w-3 h-0.5 bg-brand-honey rounded inline-block" />
             Transactions
           </span>
         </div>
@@ -74,11 +74,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
               <stop offset="95%" stopColor="#00D193" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="txnGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#F6B43C" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#F6B43C" stopOpacity={0} />
+              <stop offset="5%" stopColor="#E2911F" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="#E2911F" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1A3828" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.10)" vertical={false} />
           <XAxis
             dataKey="date"
             tick={{ fill: "#6B7280", fontSize: 11 }}
@@ -116,11 +116,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
             type="monotone"
             dataKey="transactions"
             name="Transactions"
-            stroke="#F6B43C"
+            stroke="#E2911F"
             strokeWidth={2}
             fill="url(#txnGradient)"
             dot={false}
-            activeDot={{ r: 4, fill: "#F6B43C" }}
+            activeDot={{ r: 4, fill: "#E2911F" }}
           />
         </AreaChart>
       </ResponsiveContainer>

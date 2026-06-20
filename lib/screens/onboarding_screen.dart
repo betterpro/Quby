@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_colors.dart';
 import '../widgets/q_icon.dart';
 import '../widgets/quby_mark.dart';
+import '../widgets/safe_layout.dart';
 import 'auth_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -21,33 +23,37 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   static const _slides = [
     _Slide(
-      gradient: [Color(0xFF0A1F15), Color(0xFF0D2B1C)],
-      accent: Color(0xFF00D193),
+      gradient: [QubyColors.bgDark, QubyColors.surface2Dark],
+      accent: QubyColors.accentGreenDark,
       icon: 'sparkle',
       isLogo: true,
       title: 'Welcome to Quby',
-      subtitle: 'The smart wallet for everyday spending,\nsplitting, and earning.',
+      subtitle:
+          'The smart wallet for everyday spending,\nsplitting, and earning.',
     ),
     _Slide(
       gradient: [Color(0xFF0A0F2E), Color(0xFF0D1340)],
       accent: Color(0xFF5B6CE0),
       icon: 'contactless',
       title: 'Pay Anywhere',
-      subtitle: 'Tap or scan to pay at local cafés,\nbakeries, and restaurants instantly.',
+      subtitle:
+          'Tap or scan to pay at local cafés,\nbakeries, and restaurants instantly.',
     ),
     _Slide(
       gradient: [Color(0xFF1A0F2E), Color(0xFF200D40)],
       accent: Color(0xFF9A6CD4),
       icon: 'users',
       title: 'Split with Friends',
-      subtitle: 'Track shared expenses and settle up\nwithout the awkward conversations.',
+      subtitle:
+          'Track shared expenses and settle up\nwithout the awkward conversations.',
     ),
     _Slide(
       gradient: [Color(0xFF2E1A0A), Color(0xFF3D2208)],
       accent: Color(0xFFE2911F),
       icon: 'star',
       title: 'Earn as You Spend',
-      subtitle: 'Every purchase earns Quby points.\nRedeem for cashback and perks.',
+      subtitle:
+          'Every purchase earns Quby points.\nRedeem for cashback and perks.',
       isLast: true,
     ),
   ];
@@ -56,7 +62,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-    _fadeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _fadeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 400));
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
   }
@@ -96,8 +103,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     final slide = _slides[_page];
     final size = MediaQuery.of(context).size;
-    final topPad = MediaQuery.of(context).padding.top;
-    final bottomPad = MediaQuery.of(context).padding.bottom;
+    final topPad = QubyLayout.topInset(context);
+    final bottomPad = QubyLayout.bottomInset(context);
 
     return Scaffold(
       body: AnimatedContainer(
@@ -122,7 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 220,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: slide.accent.withOpacity(0.08),
+                  color: slide.accent.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -135,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: slide.accent.withOpacity(0.05),
+                  color: slide.accent.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -164,16 +171,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: s.accent.withOpacity(0.15),
+                              color: s.accent.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: s.accent.withOpacity(0.25),
+                                color: s.accent.withValues(alpha: 0.25),
                                 width: 1.5,
                               ),
                             ),
                             child: s.isLogo
-                                ? Center(
-                                    child: QubyMark(size: 52, accentColor: s.accent),
+                                ? const Center(
+                                    child: QubyMark(
+                                        size: 52,
+                                        variant: QubyMarkVariant.dark),
                                   )
                                 : Center(child: qIcon(s.icon, 48, s.accent)),
                           ),
@@ -195,7 +204,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           s.subtitle,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.65),
+                            color: Colors.white.withValues(alpha: 0.65),
                             height: 1.6,
                           ),
                         ),
@@ -228,7 +237,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           decoration: BoxDecoration(
                             color: active
                                 ? _slides[_page].accent
-                                : Colors.white.withOpacity(0.25),
+                                : Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         );
@@ -247,7 +256,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: slide.accent.withOpacity(0.4),
+                              color: slide.accent.withValues(alpha: 0.4),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -298,7 +307,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           'Skip',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.4),
+                            color: Colors.white.withValues(alpha: 0.4),
                           ),
                         ),
                       ),

@@ -5,7 +5,9 @@ import '../data/models.dart';
 import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
+import '../widgets/business_map.dart';
 import '../widgets/q_icon.dart';
+import '../widgets/safe_layout.dart';
 
 class BizDetailScreen extends StatelessWidget {
   final Business biz;
@@ -16,6 +18,7 @@ class BizDetailScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _QuickPaySheet(biz: biz),
     );
@@ -38,16 +41,16 @@ class BizDetailScreen extends StatelessWidget {
             expandedHeight: 220,
             pinned: true,
             backgroundColor: biz.color,
-            leading: IconButton(
+            leading: SliverHeroBackButton(
+              onPressed: () => Navigator.pop(context),
               icon: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: qIcon('back', 18, Colors.white),
               ),
-              onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -55,7 +58,7 @@ class BizDetailScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [biz.color, biz.color.withOpacity(0.8)],
+                    colors: [biz.color, biz.color.withValues(alpha: 0.8)],
                   ),
                 ),
                 child: SafeArea(
@@ -63,16 +66,15 @@ class BizDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 40),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Center(
-                          child: qIcon(biz.icon, 44, Colors.white),
-                        ),
+                      BusinessLogo(
+                        biz: biz,
+                        size: 80,
+                        iconSize: 44,
+                        borderRadius: 24,
+                        backgroundColor: biz.logoUrl != null
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.2),
+                        iconColor: Colors.white,
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -88,7 +90,7 @@ class BizDetailScreen extends StatelessWidget {
                         '${biz.cat} · ${biz.dist}',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -109,26 +111,35 @@ class BizDetailScreen extends StatelessWidget {
                     onTap: () => _showPay(context),
                   ),
                   const SizedBox(height: 20),
+                  if (biz.hasLocation) ...[
+                    BusinessMap(
+                      businesses: [biz],
+                      highlight: biz,
+                      height: 200,
+                      showUserLocation: false,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                   // Info cards
                   if (biz.addr != null)
-                    _infoRow(
-                        context, 'pin', biz.addr!, 'Location', isDark, textColor, dimColor, surface, border),
+                    _infoRow(context, 'pin', biz.addr!, 'Location', isDark,
+                        textColor, dimColor, surface, border),
                   if (biz.addr != null) const SizedBox(height: 10),
-                  _infoRow(
-                      context, 'bell', 'Mon–Sat 7:00–18:00', 'Hours', isDark, textColor, dimColor, surface, border),
+                  _infoRow(context, 'bell', 'Mon–Sat 7:00–18:00', 'Hours',
+                      isDark, textColor, dimColor, surface, border),
                   const SizedBox(height: 10),
-                  _infoRow(
-                      context, 'contactless', 'Quby · Card · Cash', 'Payment', isDark, textColor, dimColor, surface, border),
+                  _infoRow(context, 'contactless', 'Quby · Card · Cash',
+                      'Payment', isDark, textColor, dimColor, surface, border),
                   const SizedBox(height: 20),
                   // Rewards section
                   if (biz.offer != null)
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: biz.color.withOpacity(0.08),
+                        color: biz.color.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                            color: biz.color.withOpacity(0.25)),
+                            color: biz.color.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         children: [
@@ -136,7 +147,7 @@ class BizDetailScreen extends StatelessWidget {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: biz.color.withOpacity(0.15),
+                              color: biz.color.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
@@ -152,7 +163,7 @@ class BizDetailScreen extends StatelessWidget {
                                   'Current offer',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12,
-                                    color: biz.color.withOpacity(0.8),
+                                    color: biz.color.withValues(alpha: 0.8),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -177,13 +188,13 @@ class BizDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFFF6B43C).withOpacity(0.1),
-                          const Color(0xFFE2911F).withOpacity(0.05),
+                          QubyColors.honey.withValues(alpha: 0.1),
+                          const Color(0xFFE2911F).withValues(alpha: 0.05),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                          color: QubyColors.honey.withOpacity(0.25)),
+                          color: QubyColors.honey.withValues(alpha: 0.25)),
                     ),
                     child: Row(
                       children: [
@@ -218,7 +229,7 @@ class BizDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          const SliverToBoxAdapter(child: ScreenScrollSpacer()),
         ],
       ),
     );
@@ -291,7 +302,9 @@ class _QuickPaySheetState extends State<_QuickPaySheet> {
   void _onKey(String k) {
     setState(() {
       if (k == '⌫') {
-        if (_amount.isNotEmpty) _amount = _amount.substring(0, _amount.length - 1);
+        if (_amount.isNotEmpty) {
+          _amount = _amount.substring(0, _amount.length - 1);
+        }
       } else if (k == '.' && _amount.contains('.')) {
         return;
       } else if (_amount.contains('.') && _amount.split('.')[1].length >= 2) {
@@ -332,8 +345,7 @@ class _QuickPaySheetState extends State<_QuickPaySheet> {
         color: surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.fromLTRB(
-          24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -352,12 +364,16 @@ class _QuickPaySheetState extends State<_QuickPaySheet> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: const Color(0xFF00B488).withOpacity(0.15),
+                color: const Color(0xFF00B488).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: qIcon('check', 36,
-                    isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight),
+                child: qIcon(
+                    'check',
+                    36,
+                    isDark
+                        ? QubyColors.accentGreenDark
+                        : QubyColors.accentGreenLight),
               ),
             ),
             const SizedBox(height: 16),
@@ -385,9 +401,7 @@ class _QuickPaySheetState extends State<_QuickPaySheet> {
             NumPad(onKey: _onKey),
             const SizedBox(height: 16),
             QubyBtn(
-              label: _amount.isEmpty
-                  ? 'Enter amount'
-                  : 'Pay \$$_amount',
+              label: _amount.isEmpty ? 'Enter amount' : 'Pay \$$_amount',
               onTap: _amount.isNotEmpty ? _pay : null,
               loading: _processing,
             ),
