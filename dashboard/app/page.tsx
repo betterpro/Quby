@@ -240,8 +240,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Logo size="sm" />
           <div className="flex items-center gap-8 text-sm text-gray-500">
-            <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
             <a href="mailto:hello@qubypay.com" className="hover:text-gray-300 transition-colors">Contact</a>
           </div>
           <p className="text-sm text-gray-600">
