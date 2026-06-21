@@ -35,6 +35,12 @@ jobs:
             -exec sed -i \
               's/compileSdk = flutter\.compileSdkVersion/compileSdk 35/g' {} +
 
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > /tmp/quby-release.keystore
+
       - name: Build APK
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -42,6 +48,10 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          RELEASE_KEYSTORE_PATH: /tmp/quby-release.keystore
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter build apk --release --no-tree-shake-icons \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
