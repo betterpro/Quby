@@ -108,10 +108,19 @@ export async function updateBusiness(
   revalidatePath("/admin/businesses");
 }
 
-export async function deleteBusiness(id: string) {
+export async function deleteBusiness(id: string): Promise<{ error?: string }> {
   const supabase = createAdminClient();
 
-  await supabase.from("businesses").delete().eq("id", id);
+  // Clear FK reference in business_requests before deleting
+  await supabase
+    .from("business_requests")
+    .update({ business_id: null })
+    .eq("business_id", id);
+
+  const { error } = await supabase.from("businesses").delete().eq("id", id);
+
+  if (error) return { error: error.message };
 
   revalidatePath("/admin/businesses");
+  return {};
 }
