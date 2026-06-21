@@ -36,8 +36,11 @@ class QubyColors {
   static const accentGreenSoftDark = Color(0x2900D193);
   static const accentGreenOnDark = Color(0xFF04231A);
 
-  // Mark face colors
-  static const markFaceLight = Color(0xFFEAF0F6); // dark-background mark sides
+  // Mark face colors — 3D depth shading
+  static const markFaceLeft = Color(0xFF00B488);  // lit side
+  static const markFaceRight = Color(0xFF006B4F); // shadow side
+  static const markFaceLeftLight = Color(0xFF006B4F);  // lit side (light bg)
+  static const markFaceRightLight = Color(0xFF004A37); // shadow side (light bg)
 
   // Supporting
   static const honey = Color(0xFFE2911F);
