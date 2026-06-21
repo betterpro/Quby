@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:provider/provider.dart';
+import 'services/deep_link_service.dart';
 import 'services/supabase_service.dart';
 import 'services/stripe_service.dart';
 import 'state/app_state.dart';
@@ -22,6 +23,7 @@ void main() async {
   try {
     await SupabaseService.initialize();
     await StripeService.initialize();
+    await DeepLinkService.initialize();
   } catch (_) {
     // App works offline with seed data if Supabase is unreachable
   }
@@ -45,6 +47,7 @@ class QubyApp extends StatelessWidget {
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         themeMode: state.isDark ? ThemeMode.dark : ThemeMode.light,
+        navigatorKey: DeepLinkService.navigatorKey,
         home: const _StartupRouter(),
       ),
     );

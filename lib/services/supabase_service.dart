@@ -94,7 +94,11 @@ class SupabaseService {
   static Future<bool> signUpWithEmail(String email, String password) async {
     _ensureAuthReady();
 
-    final res = await _db.auth.signUp(email: email, password: password);
+    final res = await _db.auth.signUp(
+      email: email,
+      password: password,
+      emailRedirectTo: 'quby://login-callback',
+    );
 
     if (res.user == null) throw Exception('Sign up failed');
 
