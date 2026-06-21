@@ -39,7 +39,7 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > /tmp/quby-release.keystore
+          echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > /tmp/quby-release.keystore
 
       - name: Build APK
         env:
