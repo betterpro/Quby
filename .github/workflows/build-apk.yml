@@ -39,7 +39,13 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > /tmp/quby-release.keystore
+          python3 -c "
+          import base64, os
+          data = ''.join(os.environ['KEYSTORE_BASE64'].split())
+          with open('/tmp/quby-release.keystore', 'wb') as f:
+              f.write(base64.b64decode(data))
+          print('Keystore written:', os.path.getsize('/tmp/quby-release.keystore'), 'bytes')
+          "
 
       - name: Build APK
         env:
