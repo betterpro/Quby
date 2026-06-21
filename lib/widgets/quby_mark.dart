@@ -6,7 +6,7 @@ enum QubyMarkVariant {
   /// Green top + ink sides — for light/paper backgrounds.
   light,
 
-  /// Bright green top + light sides — for dark/ink backgrounds.
+  /// Bright green top + green depth sides — for dark/ink backgrounds.
   dark,
 }
 
@@ -30,18 +30,17 @@ class QubyMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = variant == QubyMarkVariant.dark;
-    final top =
-        isDark ? QubyColors.accentGreenDark : QubyColors.accentGreenLight;
-    final side = isDark ? QubyColors.markFaceLight : QubyColors.textLight;
-    final topHex = _hex(top);
-    final sideHex = _hex(side);
+
+    final top   = isDark ? QubyColors.accentGreenDark       : QubyColors.accentGreenLight;
+    final left  = isDark ? QubyColors.markFaceLeft           : QubyColors.markFaceLeftLight;
+    final right = isDark ? QubyColors.markFaceRight          : QubyColors.markFaceRightLight;
 
     final svg =
         '''<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <polygon points="16,3.2 27.4,9.4 16,15.6 4.6,9.4" fill="$topHex"/>
-  <polygon points="4.6,9.4 16,15.6 16,28.8 4.6,22.6" fill="$sideHex"/>
-  <polygon points="27.4,9.4 16,15.6 16,28.8 27.4,22.6" fill="$sideHex" opacity="0.78"/>
-  <polygon points="16,15.6 27.4,9.4 24.2,7.7 16,12.2 7.8,7.7 4.6,9.4" fill="white" opacity="0.16"/>
+  <polygon points="27.4,9.4 16,15.6 16,28.8 27.4,22.6" fill="${_hex(right)}"/>
+  <polygon points="4.6,9.4 16,15.6 16,28.8 4.6,22.6" fill="${_hex(left)}"/>
+  <polygon points="16,3.2 27.4,9.4 16,15.6 4.6,9.4" fill="${_hex(top)}"/>
+  <polygon points="16,3.2 27.4,9.4 24.2,7.7 16,5.2 7.8,7.7 4.6,9.4" fill="white" opacity="0.09"/>
 </svg>''';
 
     return SvgPicture.string(svg, width: size, height: size);
