@@ -35,18 +35,6 @@ jobs:
             -exec sed -i \
               's/compileSdk = flutter\.compileSdkVersion/compileSdk 35/g' {} +
 
-      - name: Decode release keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          python3 -c "
-          import base64, os
-          data = ''.join(os.environ['KEYSTORE_BASE64'].split())
-          with open('/tmp/quby-release.keystore', 'wb') as f:
-              f.write(base64.b64decode(data))
-          print('Keystore written:', os.path.getsize('/tmp/quby-release.keystore'), 'bytes')
-          "
-
       - name: Build APK
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -54,8 +42,8 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
           STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          RELEASE_KEYSTORE_PATH: /tmp/quby-release.keystore
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          RELEASE_KEYSTORE_PATH: ${{ github.workspace }}/android/app/quby-release.keystore
+          KEY_ALIAS: quby-release
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
