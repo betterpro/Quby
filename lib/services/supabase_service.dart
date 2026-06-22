@@ -347,6 +347,31 @@ class SupabaseService {
     return Contact.fromJson(row);
   }
 
+  static Future<Contact> insertContactLinked({
+    required String name,
+    required String handle,
+    required Color color,
+    required String linkedUserId,
+  }) async {
+    final uid = userId!;
+    final row = await _db
+        .from('contacts')
+        .insert({
+          'owner_id': uid,
+          'linked_user_id': linkedUserId,
+          'name': name,
+          'handle': handle.isEmpty ? null : handle,
+          'color': colorToHex(color),
+        })
+        .select()
+        .single();
+    return Contact.fromJson(row);
+  }
+
+  static Future<void> deleteContact(String contactId) async {
+    await _db.from('contacts').delete().eq('id', contactId);
+  }
+
   static Future<Contact> getOrCreateSelfContact() async {
     final uid = userId!;
 

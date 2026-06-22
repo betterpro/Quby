@@ -596,6 +596,33 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<String?> addContactFromSearch(UserSearchResult user) async {
+    try {
+      if (_contacts.any((c) => c.handle == user.handle && user.handle.isNotEmpty)) {
+        return 'Already in your contacts';
+      }
+      final contact = await SupabaseService.insertContactLinked(
+        name: user.name,
+        handle: user.handle,
+        color: user.color,
+        linkedUserId: user.id,
+      );
+      _contacts = [..._contacts, contact];
+      notifyListeners();
+      return null;
+    } catch (e) {
+      return SupabaseService.friendlyError(e);
+    }
+  }
+
+  Future<void> removeContact(String contactId) async {
+    try {
+      await SupabaseService.deleteContact(contactId);
+      _contacts = _contacts.where((c) => c.id != contactId).toList();
+      notifyListeners();
+    } catch (_) {}
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   Future<void> _persistTransaction(Transaction tx) async {

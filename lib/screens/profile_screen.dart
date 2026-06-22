@@ -9,6 +9,7 @@ import '../widgets/q_icon.dart';
 import '../widgets/safe_layout.dart';
 import 'auth_screen.dart';
 import 'business_settings_screen.dart';
+import 'contacts_screen.dart';
 import 'rewards_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -149,6 +150,21 @@ class ProfileScreen extends StatelessWidget {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => const RewardsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          Divider(height: 1, color: border),
+                          _SettingsTile(
+                            icon: 'users',
+                            label: 'Friends',
+                            textColor: textColor,
+                            dimColor: dimColor,
+                            accent: accent,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const ContactsScreen(),
                                 ),
                               );
                             },

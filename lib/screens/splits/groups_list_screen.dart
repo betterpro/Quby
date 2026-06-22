@@ -113,28 +113,37 @@ class GroupsListScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final group = state.groups[i];
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: _GroupCard(
-                      group: group,
-                      me: state.me,
-                      isDark: isDark,
-                      textColor: textColor,
-                      dimColor: dimColor,
-                      surface: surface,
-                      border: border,
-                      accent: accent,
-                      onTap: () => _pushDetail(context, group),
-                    ),
-                  );
-                },
-                childCount: state.groups.length,
+            if (state.groups.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
+                  child: _buildEmptyGroups(
+                      context, state, accent, textColor, dimColor, surface, border),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final group = state.groups[i];
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      child: _GroupCard(
+                        group: group,
+                        me: state.me,
+                        isDark: isDark,
+                        textColor: textColor,
+                        dimColor: dimColor,
+                        surface: surface,
+                        border: border,
+                        accent: accent,
+                        onTap: () => _pushDetail(context, group),
+                      ),
+                    );
+                  },
+                  childCount: state.groups.length,
+                ),
               ),
-            ),
             const SliverToBoxAdapter(child: TabScrollSpacer()),
           ],
         );
@@ -256,6 +265,79 @@ class GroupsListScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyGroups(
+    BuildContext context,
+    AppState state,
+    Color accent,
+    Color textColor,
+    Color dimColor,
+    Color surface,
+    Color border,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: border),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Center(child: qIcon('users', 32, accent)),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'No groups yet',
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Create a group to split bills, track shared expenses, and settle up with friends.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              color: dimColor,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          GestureDetector(
+            onTap: () => _showCreateGroup(context, state),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  'Create your first group',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
