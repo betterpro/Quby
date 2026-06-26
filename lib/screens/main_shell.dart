@@ -12,6 +12,7 @@ import 'home_screen.dart';
 import 'discover_screen.dart';
 import 'activity_screen.dart';
 import 'splits/groups_list_screen.dart';
+import '../services/deep_link_service.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -22,6 +23,20 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    DeepLinkService.registerShell(
+      switchTab: (i) {
+        if (mounted) setState(() => _tab = i);
+        if (i == 1) context.read<AppState>().refreshBusinesses();
+      },
+      openPay: () {
+        if (mounted) _showPay();
+      },
+    );
+  }
 
   void _showPay() {
     showModalBottomSheet(

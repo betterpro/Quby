@@ -218,62 +218,7 @@ class HomeScreen extends StatelessWidget {
               height: 1,
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _balanceAction(
-                label: 'Top Up',
-                icon: 'up',
-                onTap: onTopUpTap,
-              ),
-              const SizedBox(width: 10),
-              _balanceAction(
-                label: 'Send',
-                icon: 'send',
-                onTap: onSendTap,
-              ),
-              const SizedBox(width: 10),
-              _balanceAction(
-                label: 'Card',
-                icon: 'card',
-                onTap: () {},
-              ),
-            ],
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _balanceAction({
-    required String label,
-    required String icon,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              qIcon(icon, 18, Colors.white),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

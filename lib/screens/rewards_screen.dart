@@ -158,7 +158,7 @@ class RewardsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Gold Member',
+                  _memberTier(state.points),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -438,4 +438,11 @@ class RewardsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+String _memberTier(int points) {
+  if (points >= 2500) return 'Platinum Member';
+  if (points >= 1000) return 'Gold Member';
+  if (points >= 250)  return 'Silver Member';
+  return 'Member';
 }
